@@ -79,21 +79,6 @@ class PageOne(Frame):
         Label(self, height=2, width=35, text='File', background="#99ADD6").pack()
         open_button.pack()
 
-        Label(self, height=2, width=35, text='Type of File', background="#99ADD6").pack()
-        self.var = [''] * 4
-        self.var[0] = StringVar()
-        Checkbutton(self, text='xls', variable=self.var[0], onvalue='xls', offvalue='',
-                    command=self.get_filetype).pack()
-        self.var[1] = StringVar()
-        Checkbutton(self, text='csv', variable=self.var[1], onvalue='csv', offvalue='',
-                    command=self.get_filetype).pack()
-        self.var[2] = StringVar()
-        Checkbutton(self, text='xml', variable=self.var[2], onvalue='xml', offvalue='',
-                    command=self.get_filetype).pack()
-        self.var[3] = StringVar()
-        Checkbutton(self, text='json', variable=self.var[3], onvalue='json', offvalue='',
-                    command=self.get_filetype).pack()
-
         button = Button(self, height=2, width=35, text="Return to the First Page",
                         command=lambda: controller.show_frame("StartPage"))
         button.pack()
@@ -112,7 +97,7 @@ class PageOne(Frame):
 
         filename = askopenfilename(
             title='Open a file',
-            initialdir='/',
+            initialdir='./',
             filetypes=filetypes)
 
         showinfo(
@@ -120,16 +105,20 @@ class PageOne(Frame):
             message=filename
         )
 
+        ft = filename.split(".").pop()
         self.file = filename
-        return filename
+        self.filetype = ft
+        # return filename
 
-    def get_filetype(self):
-        filetype = ''
-        for i in self.var:
-            filetype += i.get()
-        print(filetype)
-        self.filetype = filetype
-        return filetype
+    # def get_filetype(self):
+    #     filetype = ''
+    #     for i in self.var:
+    #         filetype += i.get()
+    #     self.filetype = filetype
+    #     print(self.filetype)
+    #     print(type(self.filetype))
+
+    #     return filetype
 
     def get_list(self):
         return [self.file, self.filetype]
