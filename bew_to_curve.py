@@ -1,4 +1,4 @@
-#Code made by Margaret Pinson
+#Code translated from Matlab file made by Margaret Pinson
 
 import numpy as np
 
@@ -17,7 +17,7 @@ def bew_to_curve(bew=None, deltaS=None):
     # different MOS deltas, based on Student's t-test better/equivalent/worse
 
     delta = 0.1
-    bins = np.arange(0, 2.1, 0.1)
+    bins = np.arange(0, 2.1, delta)
 
     bin_lower = bins - delta / 2
     bin_upper = bins + delta / 2
