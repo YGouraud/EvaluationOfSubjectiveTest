@@ -9,6 +9,7 @@ from bew_to_curve import *
 from all_MOS import *
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 
 
 class SampleApp(Tk):
@@ -69,6 +70,7 @@ class PageOne(Frame):
         self.controller = controller
         self.file = ''
         self.filetype = ''
+        self.filename = ''
 
         label = Label(self, text="You can input a new file", background="#6680CC")
         label.pack(side="top", fill="x", pady=10)
@@ -108,7 +110,10 @@ class PageOne(Frame):
         ft = filename.split(".").pop()
         self.file = filename
         self.filetype = ft
-        # return filename
+        ft_name = filename.split("/").pop()
+        ft_name = ft_name.split(".")[0]
+        self.filename = ft_name
+
 
     # def get_filetype(self):
     #     filetype = ''
@@ -121,7 +126,7 @@ class PageOne(Frame):
     #     return filetype
 
     def get_list(self):
-        return [self.file, self.filetype]
+        return [self.file, self.filetype, self.filename]
 
 
 class PageTwo(Frame):
@@ -300,7 +305,13 @@ if tool == "MOS of all stimuli":
 elif tool == "Precision of subjective test":
     B, C = ratings_to_bew('inf', f)
     D, E = bew_to_curve(B, C)
+    # Idea : Put name of file as title
     plt.plot(E, D)
+    plt.title(file[2])
+    plt.xlabel('DeltaS')
+    plt.ylabel('PI')
+    plt.grid(True, linestyle='-')
+    plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
     plt.show()
 
 
