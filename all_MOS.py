@@ -1,7 +1,7 @@
 import pandas as pd
 
 #Return a dataframe containing the MOS of all stimuli
-def all_means(df):
+def all_means(df, save):
     result = pd.DataFrame()
     for i in range(len(df.index)):
         a = df.index[i]
@@ -11,5 +11,7 @@ def all_means(df):
         print('MOS of ' + str(a) + ' : ' + str(b.mean()))
 
     # Create a xlsx file with the MOS of each stimulus
-    result.to_excel("MOS.xlsx")
+    if save==True:
+        result.to_excel("MOS.xlsx")
+        print("Saved result in MOS.xlsx !")
     return result

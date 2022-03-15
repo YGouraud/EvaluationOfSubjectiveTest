@@ -208,7 +208,6 @@ class PageFour(Frame):
         # defining option list
         ToolOption = ["MOS of all stimuli", "Precision of subjective test"]
 
-
         Label(self, text="Which statistical tool do you want to use ?", background="#6680CC").pack(side="top", fill="x", pady=10)
 
         self.variable = StringVar(self)
@@ -217,6 +216,10 @@ class PageFour(Frame):
         opt = OptionMenu(self, self.variable, *ToolOption)
         # opt.config(width=90, font=('Helvetica', 12))
         opt.pack(side="top")
+
+        self.save = IntVar(self)
+        check = Checkbutton(self, variable=self.save, text="Save results in a xls file ?")
+        check.pack()
 
         Button(self, height=2, width=35, text="Return to the Previous Page",
                            command=lambda: controller.show_frame("PageThree")).pack()
@@ -230,6 +233,10 @@ class PageFour(Frame):
 
     def get_list(self):
         return [self.text]
+
+    def get_save(self):
+        save = self.save.get()
+        return save
 
 class PageFive(Frame):
 
@@ -287,6 +294,9 @@ print(sheet_num)
 tool = app.get_page("PageFour").get_tool()
 print(tool)
 
+save = app.get_page("PageFour").get_save()
+print(save)
+
 if file[1] == 'csv':
     f = pandas.read_csv(file[0])
 elif file[1] == 'xls':
@@ -301,11 +311,10 @@ else:
 print(f)
 
 if tool == "MOS of all stimuli":
-    all_means(f)
+    all_means(f, save)
 elif tool == "Precision of subjective test":
     B, C = ratings_to_bew('inf', f)
     D, E = bew_to_curve(B, C)
-    # Idea : Put name of file as title
     plt.plot(E, D)
     plt.title(file[2])
     plt.xlabel('DeltaS')
