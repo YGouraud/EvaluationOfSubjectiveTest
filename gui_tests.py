@@ -184,17 +184,17 @@ class DatasetSelection(Frame):
         label = Label(self, text="Choose precisely what part of the file you want to use", background="#6680CC")
         label.grid(column=1, row=0)
         Button(self, height=2, width=35, text="Select this SubDataset ?",
-               command=lambda: [controller.show_frame("PageFour")]).grid(column=1, row=5)
+               command=lambda: controller.show_frame("PageFour")).grid(column=1, row=5)
 
     def load_dataset(self):
         df = self.controller.get_page("PageTwo").get_current_dataset()
         self.table = pt = Table(self, dataframe=df, showtoolbar=True, showstatusbar=True)
         pt.showIndex()
         pt.show()
+        return
 
     def use_dataset(self):
-        
-
+        return self.table.getSubdata()
 
 class PageThree(Frame):
 
@@ -373,7 +373,7 @@ else:
     print("Invalid Format")
 
 if f is None:
-    f = app.get_page("PageTwo").get_current_dataset()
+    f = app.get_page("DatasetSelection").use_dataset()
 
 print(f)
 
