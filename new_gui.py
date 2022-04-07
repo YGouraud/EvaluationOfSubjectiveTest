@@ -4,12 +4,18 @@ from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
 from tkinter import ttk
 from pandas import *
+from pandastable import Table
 
 from ratings_to_bew import *
 from bew_to_curve import *
+from bew_to_curve_100 import *
 from all_MOS import *
+from load_dataset import *
 from import_file import *
 from calculCI import *
+
+import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 
 class SampleApp(Tk):
 
@@ -33,7 +39,7 @@ class SampleApp(Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, FileSelection, OurDatasets, StatisticalTools):
+        for F in (StartPage, FileSelection, OurDatasets, DatasetSelection, StatisticalTools):
             #, FileSelection, OurDatasets, DatasetsInfo, DatsetsInfo2, StatisticalTools, PageEnd
             page_name = F.__name__
             frame = F(parent=container, controller=self)
@@ -221,8 +227,67 @@ class OurDatasets(Frame):
                command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
                borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky=E)
 
-        ttk.Label(self, text="TODO", background="#007fff").grid(row=2,column=2, columnspan=2)
+        ttk.Label(self, text="Here are the already available datasets, you may choose one to use.",
+                  background="#007fff").grid(row=2, column=2, columnspan=2)
 
+        self.datasets = None
+        self.datasets_name = []
+        self.current_dataset = None
+        self.title = "Test"
+
+        # Create the button for the dataset
+        self.dataset_list()
+
+        ttk.Button(self, text="  Return to the first page   ",
+                   command=lambda: controller.show_frame("StartPage")).grid()
+        ttk.Button(self, text='            Continue               ', style="Accent.TButton",
+                   command=lambda: [controller.get_page("DatasetSelection").get_dataset(),
+                                    controller.show_frame("DatasetSelection")]).grid()
+
+    def dataset_list(self):
+        dataset_dict = load_dataset()
+        self.datasets = dataset_dict
+        for name in dataset_dict:
+            self.datasets_name.append(name)
+            self.create_Button(name)
+        return
+
+    def create_Button(self, name):
+        Button(self, height=2, width=50, text=name,
+               command=lambda: self.assign_dataset(name)).grid(column=2, columnspan=2)
+        return
+
+    def assign_dataset(self, name):
+        self.current_dataset = self.datasets[name]
+        return
+
+    def get_current_dataset(self):
+        return self.current_dataset
+
+class DatasetSelection(Frame):
+    """Basic test frame for the table"""
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.geometry = '500x500'
+        self.table = None
+
+        label = Label(self, text="Choose precisely what part of the file you want to use", background="#6680CC")
+        label.grid(column=1, row=0)
+        Button(self, height=2, width=35, text="Select this SubDataset ?",
+               command=lambda: controller.show_frame("StatisticalTools")).grid(column=1, row=5)
+
+
+    def get_dataset(self):
+        df = self.controller.get_page("OurDatasets").get_current_dataset()
+        self.table = pt = Table(self, dataframe=df, showtoolbar=True, showstatusbar=True)
+        pt.showIndex()
+        pt.show()
+        return
+
+    def use_dataset(self):
+        return self.table.getSubdata()
 
 class StatisticalTools(Frame):
 
@@ -266,6 +331,10 @@ class StatisticalTools(Frame):
         opt = ttk.OptionMenu(self, self.variable, *ToolOption, command= self.definition)
         opt.grid(row=3, column=2, columnspan=2)
 
+        self.save = IntVar(self)
+        check = Checkbutton(self, variable=self.save, text="Save results in a xls file ?")
+        check.grid()
+
         self.label = ttk.Label(self, text="  ")
         self.label.grid(row=4,column=2, columnspan=2)
 
@@ -299,6 +368,10 @@ class StatisticalTools(Frame):
     def get_list(self):
         return [self.text]
 
+    def get_save(self):
+        save = self.save.get()
+        return save
+
     def go(self):
 
         filename = app.get_page("FileSelection").get_file()
@@ -311,6 +384,9 @@ class StatisticalTools(Frame):
         tool = app.get_page("StatisticalTools").get_tool()
         print('Tool : ' + tool)
 
+        save = app.get_page("StatisticalTools").get_save()
+        print(save)
+
         if filename[1] == 'csv':
             f = pandas.read_csv(filename[0])
         elif filename[1] == 'xls':
@@ -322,16 +398,37 @@ class StatisticalTools(Frame):
             f = pandas.read_xml(filename[0])
         else:
             print("Invalid Format")
+            f = None
+
+        if f is None:
+            f = app.get_page("DatasetSelection").use_dataset()
 
         print(f)
 
         if tool == "MOS of all stimuli":
-            all_means(f)
-        elif tool == "Precision of subjective test":
+            all_means(f, save)
+        elif tool == "Precision of subjective test (ACR-5)":
             B, C = ratings_to_bew('inf', f)
             D, E = bew_to_curve(B, C)
             plt.plot(E, D)
+            plt.title(filename[2])
+            plt.xlabel('DeltaS')
+            plt.ylabel('PI')
+            plt.grid(True, linestyle='-')
+            plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
             plt.show()
+
+        elif tool == "Precision of subjective test (ACR-100)":
+            B, C = ratings_to_bew('inf', f)
+            D, E = bew_to_curve_100(B, C)
+            plt.plot(E, D)
+            plt.title(filename[2])
+            plt.xlabel('DeltaS')
+            plt.ylabel('PI')
+            plt.grid(True, linestyle='-')
+            plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
+            plt.show()
+
         elif tool == "Confidence Interval":
             CI(filename[0])
 
