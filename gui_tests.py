@@ -2,11 +2,15 @@ from tkinter import *
 
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
+
 from pandas import *
+from pandastable import Table
 
 from ratings_to_bew import *
 from bew_to_curve import *
+from bew_to_curve_100 import *
 from all_MOS import *
+from load_dataset import *
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
@@ -27,7 +31,7 @@ class SampleApp(Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, PageOne, PageTwo, PageThree, PageFour, PageFive, PageEnd):
+        for F in (StartPage, PageOne, PageTwo, DatasetSelection, PageThree, PageFour, PageFive, PageEnd):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -47,8 +51,6 @@ class SampleApp(Tk):
     def get_page(self, page_name):
         return self.frames[page_name]
 
-
-
 class StartPage(Frame):
 
     def __init__(self, parent, controller):
@@ -58,9 +60,9 @@ class StartPage(Frame):
         label.pack(side="top", fill="x", pady=10)
 
         Button(self, height=2, width=35, text="You want to add your own dataset",
-                            command=lambda: controller.show_frame("PageOne")).pack()
+               command=lambda: controller.show_frame("PageOne")).pack()
         Button(self, height=2, width=35, text="You want to use the datasets that we have",
-                            command=lambda: controller.show_frame("PageTwo")).pack()
+               command=lambda: controller.show_frame("PageTwo")).pack()
 
 
 class PageOne(Frame):
@@ -85,7 +87,7 @@ class PageOne(Frame):
                         command=lambda: controller.show_frame("StartPage"))
         button.pack()
         Button(self, height=2, width=35, text='Continue', bg="#78B060",
-               command=lambda: controller.show_frame("PageThree")).pack()
+               command=lambda: controller.show_frame("DatasetSelection")).pack()
         # button = Button(m, text='Continue', bg="green", width=10, height=5, command=window.destroy)
 
     def select_file(self):
@@ -114,7 +116,6 @@ class PageOne(Frame):
         ft_name = ft_name.split(".")[0]
         self.filename = ft_name
 
-
     # def get_filetype(self):
     #     filetype = ''
     #     for i in self.var:
@@ -134,12 +135,65 @@ class PageTwo(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
+        self.datasets = None
+        self.datasets_name = []
+        self.current_dataset = None
         self.title = "Test"
-        Label(self, text="TODO", background="#6680CC").pack(side="top", fill="x", pady=10)
+
+        Label(self, text="Here are the already available datasets, you may choose one to use.",
+              background="#6680CC").pack(side="top", fill="x", pady=10)
+
+        # Create the button for the dataset
+        self.dataset_list()
+
         Button(self, height=2, width=35, text="Return to the First Page",
-                           command=lambda: controller.show_frame("StartPage")).pack()
+               command=lambda: controller.show_frame("StartPage")).pack()
         Button(self, height=2, width=35, text='Continue', bg="#78B060",
-                      command=lambda: controller.show_frame("PageEnd")).pack()
+               command=lambda: [controller.get_page("DatasetSelection").load_dataset(),controller.show_frame("DatasetSelection")]).pack()
+
+    def dataset_list(self):
+        dataset_dict = load_dataset()
+        self.datasets = dataset_dict
+        for name in dataset_dict:
+            self.datasets_name.append(name)
+            self.create_Button(name)
+        return
+
+    def create_Button(self, name):
+        Button(self, height=2, width=50, text=name,
+               command=lambda: self.assign_dataset(name)).pack()
+        return
+
+    def assign_dataset(self, name):
+        self.current_dataset = self.datasets[name]
+        return
+
+    def get_current_dataset(self):
+        return self.current_dataset
+
+
+class DatasetSelection(Frame):
+    """Basic test frame for the table"""
+
+    def __init__(self, parent, controller, dataset = None):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.geometry = '500x500'
+        self.table = None
+
+        label = Label(self, text="Choose precisely what part of the file you want to use", background="#6680CC")
+        label.grid(column=1, row=0)
+        Button(self, height=2, width=35, text="Select this SubDataset ?",
+               command=lambda: [controller.show_frame("PageFour")]).grid(column=1, row=5)
+
+    def load_dataset(self):
+        df = self.controller.get_page("PageTwo").get_current_dataset()
+        self.table = pt = Table(self, dataframe=df, showtoolbar=True, showstatusbar=True)
+        pt.showIndex()
+        pt.show()
+
+    def use_dataset(self):
+        
 
 
 class PageThree(Frame):
@@ -153,10 +207,11 @@ class PageThree(Frame):
         self.number_observers = ''
         self.sheet_number = ''
 
-        #defining option list
-        OptionSheet = [1,2,3]
+        # defining option list
+        OptionSheet = [1, 2, 3]
 
-        label = Label(self, text="Informations about your datasets", background="#6680CC").pack(side="top", fill="x", pady=10)
+        label = Label(self, text="Informations about your datasets", background="#6680CC").pack(side="top", fill="x",
+                                                                                                pady=10)
 
         Label(self, text="Number of stimuli").pack()
         self.e1 = Entry(self)
@@ -171,11 +226,11 @@ class PageThree(Frame):
 
         Label(self, text="Which sheet to use").pack()
         opt = OptionMenu(self, self.variable, *OptionSheet)
-        #opt.config(width=90, font=('Helvetica', 12))
+        # opt.config(width=90, font=('Helvetica', 12))
         opt.pack(side="top")
 
         Button(self, height=2, width=35, text="Return to the Previous Page",
-                           command=lambda: controller.show_frame("PageOne")).pack()
+               command=lambda: controller.show_frame("PageOne")).pack()
         Button(self, height=2, width=35, text='Continue', bg="#78B060",
                command=lambda: [self.get_text(), self.get_sheet_num(), controller.show_frame("PageFour")]).pack()
 
@@ -206,9 +261,11 @@ class PageFour(Frame):
         self.tool = ''
 
         # defining option list
-        ToolOption = ["MOS of all stimuli", "Precision of subjective test"]
+        ToolOption = ["MOS of all stimuli", "Precision of subjective test (ACR-5)",
+                      "Precision of subjective test (ACR-100)"]
 
-        Label(self, text="Which statistical tool do you want to use ?", background="#6680CC").pack(side="top", fill="x", pady=10)
+        Label(self, text="Which statistical tool do you want to use ?", background="#6680CC").pack(side="top", fill="x",
+                                                                                                   pady=10)
 
         self.variable = StringVar(self)
         self.variable.set(ToolOption[0])
@@ -222,9 +279,9 @@ class PageFour(Frame):
         check.pack()
 
         Button(self, height=2, width=35, text="Return to the Previous Page",
-                           command=lambda: controller.show_frame("PageThree")).pack()
+               command=lambda: controller.show_frame("PageThree")).pack()
         Button(self, height=2, width=35, text='Continue', bg="#78B060",
-               command=lambda: [self.get_tool(),controller.show_frame("PageFive")]).pack()
+               command=lambda: [self.get_tool(), controller.show_frame("PageFive")]).pack()
 
     def get_tool(self):
         tool = self.variable.get()
@@ -237,6 +294,7 @@ class PageFour(Frame):
     def get_save(self):
         save = self.save.get()
         return save
+
 
 class PageFive(Frame):
 
@@ -252,7 +310,7 @@ class PageFive(Frame):
         self.text_box.pack()
 
         Button(self, height=2, width=35, text="Return to the Previous Page",
-                           command=lambda: controller.show_frame("PageFour")).pack()
+               command=lambda: controller.show_frame("PageFour")).pack()
         Button(self, height=2, width=35, text='Continue', bg="#78B060",
                command=lambda: [self.get_text(), controller.show_frame("PageEnd")]).pack()
 
@@ -275,10 +333,10 @@ class PageEnd(Frame):
         label.pack(side="top", fill="x", pady=10)
 
         Button(self, height=2, width=35, text="Return to the First Page",
-                        command=lambda: controller.show_frame("StartPage")).pack()
+               command=lambda: controller.show_frame("StartPage")).pack()
 
         Button(self, height=2, width=35, text="END",
-                        command=lambda: controller.destroy()).pack()
+               command=lambda: controller.destroy()).pack()
 
 
 if __name__ == "__main__":
@@ -297,10 +355,16 @@ print(tool)
 save = app.get_page("PageFour").get_save()
 print(save)
 
+save = app.get_page("PageFour").get_save()
+print(save)
+
+f = None
+
 if file[1] == 'csv':
     f = pandas.read_csv(file[0])
 elif file[1] == 'xls':
-    f = pandas.read_excel(file[0], sheet_name=(sheet_num-1), usecols='A:AG', index_col=0, header=1, keep_default_na=True)
+    f = pandas.read_excel(file[0], sheet_name=(sheet_num - 1), usecols='A:AG', index_col=0, header=1,
+                          keep_default_na=True)
 elif file[1] == 'json':
     f = pandas.read_json(file[0])
 elif file[1] == 'xml':
@@ -308,11 +372,14 @@ elif file[1] == 'xml':
 else:
     print("Invalid Format")
 
+if f is None:
+    f = app.get_page("PageTwo").get_current_dataset()
+
 print(f)
 
 if tool == "MOS of all stimuli":
     all_means(f, save)
-elif tool == "Precision of subjective test":
+elif tool == "Precision of subjective test (ACR-5)":
     B, C = ratings_to_bew('inf', f)
     D, E = bew_to_curve(B, C)
     plt.plot(E, D)
@@ -322,5 +389,13 @@ elif tool == "Precision of subjective test":
     plt.grid(True, linestyle='-')
     plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
     plt.show()
-
-
+elif tool == "Precision of subjective test (ACR-100)":
+    B, C = ratings_to_bew('inf', f)
+    D, E = bew_to_curve_100(B, C)
+    plt.plot(E, D)
+    plt.title(file[2])
+    plt.xlabel('DeltaS')
+    plt.ylabel('PI')
+    plt.grid(True, linestyle='-')
+    plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
+    plt.show()
