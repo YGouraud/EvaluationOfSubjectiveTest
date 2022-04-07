@@ -10,10 +10,12 @@ from ratings_to_bew import *
 from bew_to_curve import *
 from bew_to_curve_100 import *
 from all_MOS import *
+from load_dataset import *
+
 from import_file import *
 from calculCI import *
 ##import xlrd
-from load_dataset import *
+
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
@@ -109,6 +111,7 @@ class PageOne(Frame):
         button.pack(side="bottom", pady=5, padx=5)
         ttk.Button(self, text='            Continue               ', style="Accent.TButton",
                command=lambda: controller.show_frame("DatasetSelection")).pack(side="bottom", pady=5, padx=5)
+    
         # button = Button(m, text='Continue', bg="green", width=10, height=5, command=window.destroy)
 
     def select_file(self):
@@ -133,6 +136,7 @@ class PageOne(Frame):
         ft = filename.split(".").pop()
         self.file = filename
         self.filetype = ft
+
         ft_name = filename.split("/").pop()
         ft_name = ft_name.split(".")[0]
         self.filename = ft_name
@@ -144,7 +148,7 @@ class PageOne(Frame):
         else:
             pass
 
-    def get_file(self):
+    def get_list(self):
         return [self.file, self.filetype, self.filename]
 
     def get_sheet_num(self):
@@ -158,21 +162,20 @@ class PageTwo(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
+
+        ttk.Label(self, text="Here are the already available datasets, you may choose one to use.", background="#007fff").pack(side="top", fill="x", pady=10)
+        
         self.datasets = None
         self.datasets_name = []
         self.current_dataset = None
         self.title = "Test"
 
-        Label(self, text="Here are the already available datasets, you may choose one to use.",
-              background="#007fff").pack(side="top", fill="x", pady=10)
-
         # Create the button for the dataset
         self.dataset_list()
-
         ttk.Button(self, text="  Return to the first page   ",
                            command=lambda: controller.show_frame("StartPage")).pack(side="bottom", pady=5, padx=5)
         ttk.Button(self, text='            Continue               ', style="Accent.TButton",
-                      command=lambda: controller.show_frame("DatasetSelection")).pack(side="bottom", padx=5, pady=5)
+                      command=lambda: [controller.get_page("DatasetSelection").load_dataset(),controller.show_frame("DatasetSelection")]).pack(side="bottom", padx=5, pady=5)
 
     def dataset_list(self):
         dataset_dict = load_dataset()
@@ -209,6 +212,7 @@ class DatasetSelection(Frame):
         Button(self, height=2, width=35, text="Select this SubDataset ?",
                command=lambda: controller.show_frame("PageFour")).grid(column=1, row=5)
 
+
     def load_dataset(self):
         df = self.controller.get_page("PageTwo").get_current_dataset()
         self.table = pt = Table(self, dataframe=df, showtoolbar=True, showstatusbar=True)
@@ -229,7 +233,11 @@ class PageThree(Frame):
         self.number_observers = ''
         self.sheet_number = ''
 
+
         label = ttk.Label(self, text="\n       Informations about your datasets \n", background="#007fff").pack(side="top", fill="x", pady=10)
+
+        # defining option list
+        OptionSheet = [1, 2, 3]
 
         ttk.Label(self, text="Number of stimuli").pack()
         self.e1 = ttk.Entry(self)
@@ -239,10 +247,19 @@ class PageThree(Frame):
         self.e2 = ttk.Entry(self)
         self.e2.pack()
 
+
+        self.variable = IntVar(self)
+        self.variable.set(OptionSheet[0])
+
+        Label(self, text="Which sheet to use").pack()
+        opt = OptionMenu(self, self.variable, *OptionSheet)
+        # opt.config(width=90, font=('Helvetica', 12))
+        opt.pack(side="top")
+        
         ttk.Button(self, text="Return to the previous page",
                            command=lambda: controller.show_frame("PageOne")).pack(side="bottom", padx=5, pady=5)
         ttk.Button(self, text='            Continue               ', style="Accent.TButton",
-                   command=lambda:  [self.get_text(), controller.show_frame("PageFour")]).pack(side="bottom", padx=5, pady=5)
+                   command=lambda:  [self.get_text(), self.get_sheet_num(), controller.show_frame("PageFour")]).pack(side="bottom", padx=5, pady=5)
 
 
     def get_text(self):
@@ -265,6 +282,7 @@ class PageFour(Frame):
         self.text = ''
         ttk.Label(self, text="\n       Informations about your datasets \n", background="#007fff").pack(side="top", fill="x", pady=10)
 
+
         self.stimuli_column = ''
         self.observers_column = ''
         self.score_column = ''
@@ -286,6 +304,10 @@ class PageFour(Frame):
         self.e4 = ttk.Entry(self)
         self.e4.pack()
 
+        self.save = IntVar(self)
+        check = Checkbutton(self, variable=self.save, text="Save results in a xls file ?")
+        check.pack()
+
         ttk.Button(self, text="Return to the previous page",
                            command=lambda: controller.show_frame("PageThree")).pack(side="bottom", padx=5, pady=5)
         ttk.Button(self, text='            Continue               ', style="Accent.TButton",
@@ -306,6 +328,11 @@ class PageFour(Frame):
     def get_info(self):
         return [self.observers_column, self.observers_prefix, self.stimuli_column,  self.score_column]
 
+    def get_save(self):
+        save = self.save.get()
+        return save
+
+
 class PageFive(Frame):
 
     def __init__(self, parent, controller):
@@ -315,13 +342,11 @@ class PageFive(Frame):
         self.text = ''
         self.tool = ''
 
-
         # defining option list
-        ToolOption = ["Choose an option","MOS of all stimuli", "Precision of subjective test (ACR-5)",
-                      "Precision of subjective test (ACR-100)","Confidence Interval"]
+        ToolOption = ["Choose an option", "MOS of all stimuli", "Precision of subjective test (ACR-5)",
+                      "Precision of subjective test (ACR-100)", "Confidence Interval"]
 
-        Label(self, text="Which statistical tool do you want to use ?", background="#6680CC").pack(side="top", fill="x",
-                                                                                                   pady=10)
+
 
         ttk.Label(self, text=" \n           Which statistical tool do you \n   "
                              "                  want to use ? ", background="#007fff")\
@@ -334,14 +359,6 @@ class PageFive(Frame):
         # opt.config(width=90, font=('Helvetica', 12))
         opt.pack(side="top")
 
-        self.save = IntVar(self)
-        check = Checkbutton(self, variable=self.save, text="Save results in a xls file ?")
-        check.pack()
-
-        Button(self, height=2, width=35, text="Return to the Previous Page",
-               command=lambda: controller.show_frame("PageThree")).pack()
-        Button(self, height=2, width=35, text='Continue', bg="#78B060",
-               command=lambda: [self.get_tool(), controller.show_frame("PageFive")]).pack()
 
         self.label = ttk.Label(self, text="  ")
         #self.label.config(height=3, width=20)
@@ -362,12 +379,6 @@ class PageFive(Frame):
     def definition(self, event):
         ToolOption = ["MOS of all stimuli", "Precision of subjective test", "Confidence Interval"]
 
-    def get_save(self):
-        save = self.save.get()
-        return save
-
-
-class PageFive(Frame):
         if self.variable.get() == ToolOption[0]:
             self.label.destroy()
             self.label = Label(self,
@@ -430,10 +441,6 @@ print(fileinfo)
 save = app.get_page("PageFour").get_save()
 print(save)
 
-save = app.get_page("PageFour").get_save()
-print(save)
-
-f = None
 tool = app.get_page("PageFive").get_tool()
 print('Tool : ' + tool)
 
@@ -447,6 +454,7 @@ elif filename[1] == 'xml':
     f = pandas.read_xml(filename[0])
 else:
     print("Invalid Format")
+    f = None
 
 if f is None:
     f = app.get_page("DatasetSelection").use_dataset()
@@ -475,7 +483,6 @@ elif tool == "Precision of subjective test (ACR-100)":
     plt.grid(True, linestyle='-')
     plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
     plt.show()
+
 elif tool == "Confidence Interval":
     CI(filename[0])
-
-
