@@ -35,7 +35,6 @@ def bew_to_curve(bew=None, deltaS=None):
     # print results just below and just above 95%.
     # let the user choose which is closer.
 
-
     v = np.where(better > 0.95)
     tmp = v[0][0]
 
@@ -47,4 +46,6 @@ def bew_to_curve(bew=None, deltaS=None):
 
     print(100*better[tmp], "% at ", bins[tmp])
 
+
+    #show those results in a window
     return better, bins

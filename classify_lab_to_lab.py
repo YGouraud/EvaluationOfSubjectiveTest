@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from scipy.stats import ttest_ind
 
-def classify_lab_to_lab(testname, labA, labB):
+def classify_lab_to_lab(testname, labA, labB, save):
 # labA and labB list the ratings for each lab on the identical sequences,
 # rated by different subjects.
 # calculate the different results of conclusions by the two labs for all
@@ -43,15 +43,26 @@ def classify_lab_to_lab(testname, labA, labB):
     print(str(labA.shape[0]) + ' PVSs, ')
     print('Subjects: ' + str(labA.shape[1]) + ' vs ' + str(labB.shape[1]) + '\n')
 
-    print(str(round(100*conclude[0]/sum(conclude))) + ' Agree Rank, ')
-    print(str(round(100*conclude[1]/sum(conclude))) + ' Agree Tie, ')
-    print(str(round(100*conclude[2]/sum(conclude))) + ' Unconfirmed (labA), ')
-    print(str(round(100*conclude[3]/sum(conclude))) + ' Unconfirmed (labB), ')
-    print(str(100*conclude[4]/sum(conclude)) + ' Disagree\n')
+    print(str(round(100*conclude[0]/sum(conclude))) + '% Agree Rank, ')
+    print(str(round(100*conclude[1]/sum(conclude))) + '% Agree Tie, ')
+    print(str(round(100*conclude[2]/sum(conclude))) + '% Unconfirmed (labA), ')
+    print(str(round(100*conclude[3]/sum(conclude))) + '% Unconfirmed (labB), ')
+    print(str(100*conclude[4]/sum(conclude)) + '% Disagree\n')
+
+    # Giving the possibility to get the result in a table ?
+    if save==True:
+        result = pd.DataFrame({"Agree Rank": round(100*conclude[0]/sum(conclude)),
+                               "Agree Tie": round(100*conclude[1]/sum(conclude)),
+                               "Unconfirmed (labA)": round(100*conclude[2]/sum(conclude)),
+                               "Unconfirmed (labB)": round(100*conclude[3]/sum(conclude)),
+                               "Disagree": round(100*conclude[4]/sum(conclude), ndigits=3)}, index=["Pourcentage"])
+        result.to_excel("Lab2lab.xlsx")
+        print("Saved result in Lab2lab.xlsx !")
+        #change the name of the file according to the datasets used ?
 
 
 
-labA = pd.read_excel('datasets/IRCCyN_IVC_DIBR_Videos_Scores.xls', sheet_name=0, usecols='A:Q', index_col=0, header=1, keep_default_na=True)
-labB = pd.read_excel('datasets/IRCCyN_IVC_DIBR_Videos_Scores.xls', sheet_name=0, usecols='R:AG', header=1, keep_default_na=True)
-classify_lab_to_lab("soupe", labA, labB)
-print("soupe")
+labA = pd.read_excel('datasets/CCRIQ_Primary_Study_data_3labs(1).xlsx', sheet_name=0, usecols='A,P:X', nrows=111, index_col=0, header=2, keep_default_na=True)
+labB = pd.read_excel('datasets/CCRIQ_Primary_Study_data_3labs(1).xlsx', sheet_name=0, usecols='A,AZ:BG', nrows=111, index_col=0, header=2, keep_default_na=True)
+classify_lab_to_lab("Test", labA, labB, True)
+print(" ")
