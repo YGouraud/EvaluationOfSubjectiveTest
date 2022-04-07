@@ -2,7 +2,7 @@ from tkinter import *
 
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
-
+from tkinter import ttk
 from pandas import *
 from pandastable import Table
 
@@ -10,6 +10,9 @@ from ratings_to_bew import *
 from bew_to_curve import *
 from bew_to_curve_100 import *
 from all_MOS import *
+from import_file import *
+from calculCI import *
+##import xlrd
 from load_dataset import *
 
 import matplotlib.pyplot as plt
@@ -20,7 +23,16 @@ class SampleApp(Tk):
 
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
-        self.title = "Test"
+
+        self.title("PTRANS")
+        self.geometry('250x400')
+        self.style = ttk.Style(self)
+        # Just simply import the azure.tcl file
+        self.call("source", "Azure-ttk-theme-main/azure.tcl")
+
+        # Then set the theme you want with the set_theme procedure
+        self.call("set_theme", "light")
+        #self.style.set_theme("light")
 
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
@@ -44,7 +56,6 @@ class SampleApp(Tk):
         self.show_frame("StartPage")
 
     def show_frame(self, page_name):
-        '''Show a frame for the given page name'''
         frame = self.frames[page_name]
         frame.tkraise()
 
@@ -56,13 +67,14 @@ class StartPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-        label = Label(self, text="Welcome to our tool !", background="#6680CC")
-        label.pack(side="top", fill="x", pady=10)
+        label = ttk.Label(self, text="\n            Welcome to our tool !\n", background="#007fff")
+        #, background="#6680CC")
+        label.pack(side="top", fill="x", pady=15, padx=10)
 
-        Button(self, height=2, width=35, text="You want to add your own dataset",
-               command=lambda: controller.show_frame("PageOne")).pack()
-        Button(self, height=2, width=35, text="You want to use the datasets that we have",
-               command=lambda: controller.show_frame("PageTwo")).pack()
+        ttk.Button(self, text="You want to add your own dataset \n",
+                            command=lambda: controller.show_frame("PageOne")).pack(pady=10, padx=5)
+        ttk.Button(self, text="   You want to use the datasets     \n              that we have",
+                            command=lambda: controller.show_frame("PageTwo")).pack(padx=5)
 
 
 class PageOne(Frame):
@@ -74,26 +86,35 @@ class PageOne(Frame):
         self.filetype = ''
         self.filename = ''
 
-        label = Label(self, text="You can input a new file", background="#6680CC")
-        label.pack(side="top", fill="x", pady=10)
+        label = ttk.Label(self, text="\n          You can input a new file \n", background="#007fff")
+                      #, background="#6680CC")
+        label.pack(side="top", fill="x", pady=15, padx=10)
 
-        # open button
-        open_button = Button(self, text='Open a File', command=self.select_file, padx=5, pady=5)
+        open_button = ttk.Button(self, text='Open a File', command=lambda: [self.select_file(), self.option()])
 
-        Label(self, height=2, width=35, text='File', background="#99ADD6").pack()
+        ttk.Label(self, text='File :').pack()
         open_button.pack()
 
-        button = Button(self, height=2, width=35, text="Return to the First Page",
+        # defining option list
+        OptionSheet = [1, 1, 2, 3]
+
+        self.variable = IntVar(self)
+        self.variable.set(OptionSheet[0])
+
+        self.opt = ttk.OptionMenu(self, self.variable, *OptionSheet)
+        # opt.config(width=90, font=('Helvetica', 12))
+
+        button = ttk.Button(self, text="  Return to the first page   ",
                         command=lambda: controller.show_frame("StartPage"))
-        button.pack()
-        Button(self, height=2, width=35, text='Continue', bg="#78B060",
-               command=lambda: controller.show_frame("DatasetSelection")).pack()
+        button.pack(side="bottom", pady=5, padx=5)
+        ttk.Button(self, text='            Continue               ', style="Accent.TButton",
+               command=lambda: controller.show_frame("DatasetSelection")).pack(side="bottom", pady=5, padx=5)
         # button = Button(m, text='Continue', bg="green", width=10, height=5, command=window.destroy)
 
     def select_file(self):
         filetypes = (
-            ('Csv files', '*.csv'),
-            ('xsl files', '*.xls'),
+            ('csv files', '*.csv'),
+            ('xls files', '*.xls'),
             ('Json files', '*.json'),
             ('XML files', '*.xml'),
             ('All files', '*.*')
@@ -116,18 +137,20 @@ class PageOne(Frame):
         ft_name = ft_name.split(".")[0]
         self.filename = ft_name
 
-    # def get_filetype(self):
-    #     filetype = ''
-    #     for i in self.var:
-    #         filetype += i.get()
-    #     self.filetype = filetype
-    #     print(self.filetype)
-    #     print(type(self.filetype))
+    def option(self):
+        if self.filetype == 'xls':
+            ttk.Label(self, text="Which sheet to use ?").pack()
+            self.opt.pack(side="top")
+        else:
+            pass
 
-    #     return filetype
-
-    def get_list(self):
+    def get_file(self):
         return [self.file, self.filetype, self.filename]
+
+    def get_sheet_num(self):
+        sheet = self.variable.get()
+        self.sheet_number = sheet
+        return sheet
 
 
 class PageTwo(Frame):
@@ -141,15 +164,15 @@ class PageTwo(Frame):
         self.title = "Test"
 
         Label(self, text="Here are the already available datasets, you may choose one to use.",
-              background="#6680CC").pack(side="top", fill="x", pady=10)
+              background="#007fff").pack(side="top", fill="x", pady=10)
 
         # Create the button for the dataset
         self.dataset_list()
 
-        Button(self, height=2, width=35, text="Return to the First Page",
-               command=lambda: controller.show_frame("StartPage")).pack()
-        Button(self, height=2, width=35, text='Continue', bg="#78B060",
-               command=lambda: [controller.get_page("DatasetSelection").load_dataset(),controller.show_frame("DatasetSelection")]).pack()
+        ttk.Button(self, text="  Return to the first page   ",
+                           command=lambda: controller.show_frame("StartPage")).pack(side="bottom", pady=5, padx=5)
+        ttk.Button(self, text='            Continue               ', style="Accent.TButton",
+                      command=lambda: controller.show_frame("DatasetSelection")).pack(side="bottom", padx=5, pady=5)
 
     def dataset_list(self):
         dataset_dict = load_dataset()
@@ -201,38 +224,26 @@ class PageThree(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-        self.title = "Test"
 
         self.number_stimuli = ''
         self.number_observers = ''
         self.sheet_number = ''
 
-        # defining option list
-        OptionSheet = [1, 2, 3]
+        label = ttk.Label(self, text="\n       Informations about your datasets \n", background="#007fff").pack(side="top", fill="x", pady=10)
 
-        label = Label(self, text="Informations about your datasets", background="#6680CC").pack(side="top", fill="x",
-                                                                                                pady=10)
-
-        Label(self, text="Number of stimuli").pack()
-        self.e1 = Entry(self)
+        ttk.Label(self, text="Number of stimuli").pack()
+        self.e1 = ttk.Entry(self)
         self.e1.pack()
 
-        Label(self, text="Number of observers").pack()
-        self.e2 = Entry(self)
+        ttk.Label(self, text="Number of observers").pack()
+        self.e2 = ttk.Entry(self)
         self.e2.pack()
 
-        self.variable = IntVar(self)
-        self.variable.set(OptionSheet[0])
+        ttk.Button(self, text="Return to the previous page",
+                           command=lambda: controller.show_frame("PageOne")).pack(side="bottom", padx=5, pady=5)
+        ttk.Button(self, text='            Continue               ', style="Accent.TButton",
+                   command=lambda:  [self.get_text(), controller.show_frame("PageFour")]).pack(side="bottom", padx=5, pady=5)
 
-        Label(self, text="Which sheet to use").pack()
-        opt = OptionMenu(self, self.variable, *OptionSheet)
-        # opt.config(width=90, font=('Helvetica', 12))
-        opt.pack(side="top")
-
-        Button(self, height=2, width=35, text="Return to the Previous Page",
-               command=lambda: controller.show_frame("PageOne")).pack()
-        Button(self, height=2, width=35, text='Continue', bg="#78B060",
-               command=lambda: [self.get_text(), self.get_sheet_num(), controller.show_frame("PageFour")]).pack()
 
     def get_text(self):
         text = self.e1.get()
@@ -242,14 +253,8 @@ class PageThree(Frame):
         print(text + ' ' + text2)
         return [text, text2]
 
-    def get_sheet_num(self):
-        sheet = self.variable.get()
-        self.sheet_number = sheet
-        return sheet
-
-    def get_list(self):
+    def get_info(self):
         return [self.number_observers, self.number_stimuli]
-
 
 class PageFour(Frame):
 
@@ -258,19 +263,74 @@ class PageFour(Frame):
         self.controller = controller
         self.title = "Test"
         self.text = ''
+        ttk.Label(self, text="\n       Informations about your datasets \n", background="#007fff").pack(side="top", fill="x", pady=10)
+
+        self.stimuli_column = ''
+        self.observers_column = ''
+        self.score_column = ''
+        self.observers_prefix = ''
+
+        ttk.Label(self, text="Name of stimuli column").pack()
+        self.e1 = ttk.Entry(self)
+        self.e1.pack()
+
+        ttk.Label(self, text="Name of observers column").pack()
+        self.e2 = ttk.Entry(self)
+        self.e2.pack()
+
+        ttk.Label(self, text="Prefix for the observers").pack()
+        self.e3 = ttk.Entry(self)
+        self.e3.pack()
+
+        ttk.Label(self, text="Name of score column").pack()
+        self.e4 = ttk.Entry(self)
+        self.e4.pack()
+
+        ttk.Button(self, text="Return to the previous page",
+                           command=lambda: controller.show_frame("PageThree")).pack(side="bottom", padx=5, pady=5)
+        ttk.Button(self, text='            Continue               ', style="Accent.TButton",
+               command=lambda: [self.get_text(), controller.show_frame("PageFive")]).pack(side="bottom", padx=5, pady=5)
+
+    def get_text(self):
+        text = self.e1.get()
+        text2 = self.e2.get()
+        text3 = self.e3.get()
+        text4 = self.e4.get()
+
+        self.stimuli_column = text
+        self.observers_column = text2
+        self.score_column = text4
+        self.observers_prefix = text3
+        return [text, text2]
+
+    def get_info(self):
+        return [self.observers_column, self.observers_prefix, self.stimuli_column,  self.score_column]
+
+class PageFive(Frame):
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.title = "Test"
+        self.text = ''
         self.tool = ''
 
+
         # defining option list
-        ToolOption = ["MOS of all stimuli", "Precision of subjective test (ACR-5)",
-                      "Precision of subjective test (ACR-100)"]
+        ToolOption = ["Choose an option","MOS of all stimuli", "Precision of subjective test (ACR-5)",
+                      "Precision of subjective test (ACR-100)","Confidence Interval"]
 
         Label(self, text="Which statistical tool do you want to use ?", background="#6680CC").pack(side="top", fill="x",
                                                                                                    pady=10)
 
+        ttk.Label(self, text=" \n           Which statistical tool do you \n   "
+                             "                  want to use ? ", background="#007fff")\
+            .pack(side="top", fill="x", pady=10)
+
         self.variable = StringVar(self)
         self.variable.set(ToolOption[0])
 
-        opt = OptionMenu(self, self.variable, *ToolOption)
+        opt = ttk.OptionMenu(self, self.variable, *ToolOption, command= self.definition)
         # opt.config(width=90, font=('Helvetica', 12))
         opt.pack(side="top")
 
@@ -283,13 +343,24 @@ class PageFour(Frame):
         Button(self, height=2, width=35, text='Continue', bg="#78B060",
                command=lambda: [self.get_tool(), controller.show_frame("PageFive")]).pack()
 
+        self.label = ttk.Label(self, text="  ")
+        #self.label.config(height=3, width=20)
+        self.label.pack(expand=YES, fill=BOTH)
+
+        ttk.Button(self, text="Return to the previous page",
+                           command=lambda: controller.show_frame("PageFour")).pack(side="bottom", padx=5, pady=5)
+        ttk.Button(self, text='            Continue               ', style="Accent.TButton",
+               command=lambda: [self.get_tool(),controller.show_frame("PageEnd")]).pack(side="bottom", padx=5, pady=5)
+
+
+
     def get_tool(self):
         tool = self.variable.get()
         self.tool = tool
         return tool
 
-    def get_list(self):
-        return [self.text]
+    def definition(self, event):
+        ToolOption = ["MOS of all stimuli", "Precision of subjective test", "Confidence Interval"]
 
     def get_save(self):
         save = self.save.get()
@@ -297,30 +368,27 @@ class PageFour(Frame):
 
 
 class PageFive(Frame):
-
-    def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
-        self.controller = controller
-        self.title = "Test"
-        self.text = ''
-        Label(self, text="Informations about your datasets", background="#6680CC").pack(side="top", fill="x", pady=10)
-
-        Label(self, text="More infos - Header").pack()
-        self.text_box = Text(self, height=10, width=30)
-        self.text_box.pack()
-
-        Button(self, height=2, width=35, text="Return to the Previous Page",
-               command=lambda: controller.show_frame("PageFour")).pack()
-        Button(self, height=2, width=35, text='Continue', bg="#78B060",
-               command=lambda: [self.get_text(), controller.show_frame("PageEnd")]).pack()
-
-    def get_text(self):
-        self.text = self.text_box.get("1.0", END)
-        print(self.text)
-        return self.text
+        if self.variable.get() == ToolOption[0]:
+            self.label.destroy()
+            self.label = Label(self,
+                               text="The MOS of all stimuli allows the user \n to see the computed MOS of the stimuli \n in their dataset.")
+            self.label.config(height=3, width=20)
+            self.label.pack(expand=YES, fill=BOTH)
+        if self.variable.get() == ToolOption[1]:
+            self.label.destroy()
+            self.label = Label(self, text="The Precision of subjective test is \n a statistical tool developped \n by Margaret Pinson. ")
+            self.label.config(height=3, width=20)
+            self.label.pack(expand=YES, fill=BOTH)
+        if self.variable.get() == ToolOption[2]:
+            self.label.destroy()
+            self.label = Label(self,
+                               text="CI ")
+            self.label.config(height=3, width=20)
+            self.label.pack(expand=YES, fill=BOTH)
 
     def get_list(self):
         return [self.text]
+
 
 
 class PageEnd(Frame):
@@ -329,28 +397,35 @@ class PageEnd(Frame):
         Frame.__init__(self, parent)
         self.controller = controller
         self.title = "Test"
-        label = Label(self, text="Please wait ... ", background="#6680CC", padx=5)
+        label = ttk.Label(self, text="\n Please wait ... \n ", background="#007fff")
         label.pack(side="top", fill="x", pady=10)
 
-        Button(self, height=2, width=35, text="Return to the First Page",
-               command=lambda: controller.show_frame("StartPage")).pack()
+        ttk.Button(self, text="Return to the first page",
+                        command=lambda: controller.show_frame("StartPage")).pack(padx=5,pady=5)
 
-        Button(self, height=2, width=35, text="END",
-               command=lambda: controller.destroy()).pack()
+        ttk.Button(self, text="              End               ", style="Accent.TButton",
+                        command=lambda: controller.destroy()).pack(padx=5, pady=5)
 
 
 if __name__ == "__main__":
     app = SampleApp()
+    # Just simply import the azure.tcl file
+    #app.call("source", "Azure-ttk-theme-main/azure.tcl")
+
+    # Then set the theme you want with the set_theme procedure
+    #app.call("set_theme", "light")
     app.mainloop()
 
-file = app.get_page("PageOne").get_list()
-print(file[0])
+filename = app.get_page("PageOne").get_file()
+print('File : ' + filename[0])
 
-sheet_num = app.get_page("PageThree").get_sheet_num()
+sheet_num = app.get_page("PageOne").get_sheet_num()
+print('sheet_number')
 print(sheet_num)
 
-tool = app.get_page("PageFour").get_tool()
-print(tool)
+fileinfo = app.get_page("PageFour").get_info()
+print('INFOS')
+print(fileinfo)
 
 save = app.get_page("PageFour").get_save()
 print(save)
@@ -359,16 +434,17 @@ save = app.get_page("PageFour").get_save()
 print(save)
 
 f = None
+tool = app.get_page("PageFive").get_tool()
+print('Tool : ' + tool)
 
-if file[1] == 'csv':
-    f = pandas.read_csv(file[0])
-elif file[1] == 'xls':
-    f = pandas.read_excel(file[0], sheet_name=(sheet_num - 1), usecols='A:AG', index_col=0, header=1,
-                          keep_default_na=True)
-elif file[1] == 'json':
-    f = pandas.read_json(file[0])
-elif file[1] == 'xml':
-    f = pandas.read_xml(file[0])
+if filename[1] == 'csv':
+    f = pandas.read_csv(filename[0])
+elif filename[1] == 'xls':
+    f = pandas.read_excel(filename[0], sheet_name=(sheet_num-1), usecols='A:AG', index_col=0, header=1, keep_default_na=True)
+elif filename[1] == 'json':
+    f = pandas.read_json(filename[0])
+elif filename[1] == 'xml':
+    f = pandas.read_xml(filename[0])
 else:
     print("Invalid Format")
 
@@ -399,3 +475,7 @@ elif tool == "Precision of subjective test (ACR-100)":
     plt.grid(True, linestyle='-')
     plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
     plt.show()
+elif tool == "Confidence Interval":
+    CI(filename[0])
+
+
