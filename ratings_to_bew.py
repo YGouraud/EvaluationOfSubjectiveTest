@@ -1,4 +1,4 @@
-#Code made by Margaret Pinson
+#Code translated from Matlab file made by Margaret Pinson
 
 import numpy as np
 from scipy.stats import ttest_ind
