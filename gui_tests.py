@@ -9,6 +9,7 @@ from ratings_to_bew import *
 from bew_to_curve import *
 from all_MOS import *
 from import_file import *
+from calculCI import *
 ##import xlrd
 
 import matplotlib.pyplot as plt
@@ -137,7 +138,7 @@ class PageOne(Frame):
         else:
             pass
 
-    def get_list(self):
+    def get_file(self):
         return [self.file, self.filetype]
 
     def get_sheet_num(self):
@@ -192,7 +193,7 @@ class PageThree(Frame):
         print(text + ' ' + text2)
         return [text, text2]
 
-    def get_list(self):
+    def get_info(self):
         return [self.number_observers, self.number_stimuli]
 
 class PageFour(Frame):
@@ -204,9 +205,10 @@ class PageFour(Frame):
         self.text = ''
         ttk.Label(self, text="\n       Informations about your datasets \n", background="#007fff").pack(side="top", fill="x", pady=10)
 
-        #Label(self, text="More infos - Header").pack()
-        #self.text_box = Text(self, height=10, width=30)
-        #self.text_box.pack()
+        self.stimuli_column = ''
+        self.observers_column = ''
+        self.score_column = ''
+        self.observers_prefix = ''
 
         ttk.Label(self, text="Name of stimuli column").pack()
         self.e1 = ttk.Entry(self)
@@ -227,15 +229,22 @@ class PageFour(Frame):
         ttk.Button(self, text="Return to the previous page",
                            command=lambda: controller.show_frame("PageThree")).pack(side="bottom", padx=5, pady=5)
         ttk.Button(self, text='            Continue               ', style="Accent.TButton",
-               command=lambda: controller.show_frame("PageFive")).pack(side="bottom", padx=5, pady=5)
+               command=lambda: [self.get_text(), controller.show_frame("PageFive")]).pack(side="bottom", padx=5, pady=5)
 
-    #def get_text(self):
-    #    self.text = self.text_box.get("1.0", END)
-    #    print(self.text)
-    #    return self.text
+    def get_text(self):
+        text = self.e1.get()
+        text2 = self.e2.get()
+        text3 = self.e3.get()
+        text4 = self.e4.get()
 
-    #def get_list(self):
-    #    return [self.text]
+        self.stimuli_column = text
+        self.observers_column = text2
+        self.score_column = text4
+        self.observers_prefix = text3
+        return [text, text2]
+
+    def get_info(self):
+        return [self.observers_column, self.observers_prefix, self.stimuli_column,  self.score_column]
 
 class PageFive(Frame):
 
@@ -248,7 +257,7 @@ class PageFive(Frame):
 
 
         # defining option list
-        ToolOption = ["Choose an option", "MOS of all stimuli", "Precision of subjective test"]
+        ToolOption = ["Choose an option", "MOS of all stimuli", "Precision of subjective test", "Confidence Interval"]
 
 
         ttk.Label(self, text=" \n           Which statistical tool do you \n   "
@@ -280,7 +289,7 @@ class PageFive(Frame):
         return tool
 
     def definition(self, event):
-        ToolOption = ["MOS of all stimuli", "Precision of subjective test"]
+        ToolOption = ["MOS of all stimuli", "Precision of subjective test", "Confidence Interval"]
 
         if self.variable.get() == ToolOption[0]:
             self.label.destroy()
@@ -291,6 +300,12 @@ class PageFive(Frame):
         if self.variable.get() == ToolOption[1]:
             self.label.destroy()
             self.label = Label(self, text="The Precision of subjective test is \n a statistical tool developped \n by Margaret Pinson. ")
+            self.label.config(height=3, width=20)
+            self.label.pack(expand=YES, fill=BOTH)
+        if self.variable.get() == ToolOption[2]:
+            self.label.destroy()
+            self.label = Label(self,
+                               text="CI ")
             self.label.config(height=3, width=20)
             self.label.pack(expand=YES, fill=BOTH)
 
@@ -324,23 +339,28 @@ if __name__ == "__main__":
     #app.call("set_theme", "light")
     app.mainloop()
 
-file = app.get_page("PageOne").get_list()
-print(file[0])
+filename = app.get_page("PageOne").get_file()
+print('File : ' + filename[0])
 
 sheet_num = app.get_page("PageOne").get_sheet_num()
+print('sheet_number')
 print(sheet_num)
 
-tool = app.get_page("PageFive").get_tool()
-print(tool)
+fileinfo = app.get_page("PageFour").get_info()
+print('INFOS')
+print(fileinfo)
 
-if file[1] == 'csv':
-    f = pandas.read_csv(file[0])
-elif file[1] == 'xls':
-    f = pandas.read_excel(file[0], sheet_name=(sheet_num-1), usecols='A:AG', index_col=0, header=1, keep_default_na=True)
-elif file[1] == 'json':
-    f = pandas.read_json(file[0])
-elif file[1] == 'xml':
-    f = pandas.read_xml(file[0])
+tool = app.get_page("PageFive").get_tool()
+print('Tool : ' + tool)
+
+if filename[1] == 'csv':
+    f = pandas.read_csv(filename[0])
+elif filename[1] == 'xls':
+    f = pandas.read_excel(filename[0], sheet_name=(sheet_num-1), usecols='A:AG', index_col=0, header=1, keep_default_na=True)
+elif filename[1] == 'json':
+    f = pandas.read_json(filename[0])
+elif filename[1] == 'xml':
+    f = pandas.read_xml(filename[0])
 else:
     print("Invalid Format")
 
@@ -353,5 +373,7 @@ elif tool == "Precision of subjective test":
     D, E = bew_to_curve(B, C)
     plt.plot(E, D)
     plt.show()
+elif tool == "Confidence Interval":
+    CI(filename[0])
 
 
