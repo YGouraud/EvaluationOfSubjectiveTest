@@ -4,12 +4,17 @@ from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
 from tkinter import ttk
 from pandas import *
+from PIL import ImageTk, Image
 
 from ratings_to_bew import *
 from bew_to_curve import *
 from all_MOS import *
 from import_file import *
 from calculCI import *
+from accuracy import *
+from Sta__Dev_MOS import *
+
+#global img
 
 class SampleApp(Tk):
 
@@ -18,6 +23,7 @@ class SampleApp(Tk):
 
         self.title("PTRANS")
         self.geometry('1000x500')
+        self.state("zoomed")
 
         # We change the style of the interface
         self.style = ttk.Style(self)
@@ -33,7 +39,7 @@ class SampleApp(Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, FileSelection, OurDatasets, StatisticalTools):
+        for F in (StartPage, FileSelection, OurDatasets, StatisticalTools, About):
             #, FileSelection, OurDatasets, DatasetsInfo, DatsetsInfo2, StatisticalTools, PageEnd
             page_name = F.__name__
             frame = F(parent=container, controller=self)
@@ -109,7 +115,7 @@ class FileSelection(Frame):
         ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0,column=0, sticky=W)
         Button(self, text="Home",
                    command=lambda: controller.show_frame("StartPage"),foreground="#ffffff", background="#007fff",borderwidth=0, highlightthickness=0, cursor="hand2")\
-            .grid(row=0,column=1, sticky=E)
+            .grid(row=0,column=1,sticky=E)
         Button(self, text="Add a dataset",
                command=lambda: controller.show_frame("FileSelection"), foreground="#ffffff", background="#007fff",
                borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=2, sticky=E)
@@ -123,9 +129,8 @@ class FileSelection(Frame):
         #File input
         ttk.Label(self, text="You can input a new file").grid(row=1, column=2, columnspan=2)
 
-        open_button = ttk.Button(self, text='Open a File', command=lambda: [self.select_file(), self.option()])
+        open_button = ttk.Button(self, text='Open a File', command=lambda: [self.select_file(), self.option()], cursor="hand2")
 
-        ttk.Label(self, text='File :').grid(row=2, column=2, columnspan=2, sticky = W)
         open_button.grid(row=2, column=2, columnspan=2)
 
         # defining option list for the dropdown menu
@@ -139,11 +144,11 @@ class FileSelection(Frame):
 
         # the button open a popup with more info about the dataset structure
         ttk.Button(self, text='Information',
-                   command=lambda: self.popup_info())\
+                   command=lambda: self.popup_info(), cursor='hand2')\
             .grid(row=1, column=4)
 
         ttk.Button(self, text='Continue', style="Accent.TButton",
-               command=lambda: controller.show_frame("PageThree"))\
+               command=lambda: controller.show_frame("PageThree"), cursor="hand2")\
             .grid(row=5,column=2, columnspan=2, sticky=EW)
 
     def select_file(self):
@@ -178,11 +183,66 @@ class FileSelection(Frame):
 
     def popup_info(self):
         popup = Toplevel()
-        popup.geometry("750x250")
+        popup.geometry("800x550")
         popup.wm_title("Information on Datasets")
-        label = ttk.Label(popup, text="TODO : Describe our dataset format")
-        label.grid(row=2, column= 2)
-        ttk.Button(popup, text="Continue", command=popup.destroy).grid(row=5, column=2)
+
+        quote ='''
+        In this format, observers' ratings of each individual stimuli are presented like a matrix.
+        For example, the 5 highlighted represents the rating result of stimulus 2 by observer 2. This format can be directly entered into the system for analysis.
+                - The first column gives the names of all stimuli, no column names are required for this column, i.e. cellA1 is empty. 
+                - There are no requirements for stimuli names.
+                - The last column name is MOS (main opinion score). 
+                - Each remaining column represents an observer. The column name is the observer's number or name. 
+                - The number of columns can vary depending on the number of observers.
+                '''
+
+        title = Text(popup, height=2, font=("Helvetica", 16), borderwidth=0, padx=15)
+        title.insert(END, "\n Standard Format\n")
+        title['state'] = 'disabled'
+        title.pack(side=TOP, fill=X)
+        text = Text(popup, height=10, wrap='word', borderwidth=0, padx=5)
+        text.insert(END, quote)
+        text['state'] = 'disabled'
+        text.pack(side=TOP, fill=X)
+
+        img = ImageTk.PhotoImage(Image.open("image/data_structure.gif"))
+        label2 = Label(popup, image=img)
+        label2.pack(fill=X)
+        label2.image = img
+
+        ttk.Button(popup, text="Continue", command=lambda: [self.popup_info2(), popup.destroy()], cursor="hand2").pack()
+
+    def popup_info2(self):
+        popup = Toplevel()
+        popup.geometry("800x550")
+        popup.wm_title("Information on Datasets")
+
+        quote = '''
+            In this format, each row records an observational experiment, and it contains all the data generated by a stimuli seen by an observer.
+            The data in this format needs to be converted into our standard format and then entered into the system for analysis. 
+            Please follow the system prompts and enter the corresponding column name.
+
+            Three columns of information are necessary: observer, stimulus name, score.
+            Datasets can contain additional attribute columns (but these attributes will be ignored).
+            There is no requirement for column names, but you need to enter column name information during format conversion.
+            '''
+
+        title = Text(popup, height=2, font=("Helvetica", 16), borderwidth=0, padx=15)
+        title.insert(END, "\n Other format\n")
+        title['state'] = 'disabled'
+        title.pack(side=TOP, fill=X)
+        text = Text(popup, height=10, wrap='word', borderwidth=0, padx=5)
+        text.insert(END, quote)
+        text['state'] = 'disabled'
+        text.pack(side=TOP, fill=X)
+
+        img = ImageTk.PhotoImage(Image.open("image/other_structure.gif"))
+        label2 = Label(popup, image=img)
+        label2.pack(fill=X)
+        label2.image = img
+
+        ttk.Button(popup, text="Continue", command=popup.destroy, cursor="hand2").pack(side=RIGHT, padx=30)
+        ttk.Button(popup, text="Back", command=lambda: [popup.destroy(), self.popup_info()], cursor="hand2").pack(side=LEFT, padx=30)
 
     def get_file(self):
         return [self.file, self.filetype]
@@ -258,7 +318,7 @@ class StatisticalTools(Frame):
             .grid(row=2, column=2, columnspan=2)
 
         # defining option list
-        ToolOption = ["Choose an option", "MOS of all stimuli", "Precision of subjective test", "Confidence Interval"]
+        ToolOption = ["Choose an option", "MOS of all stimuli", "Precision of subjective test", "Confidence Interval","Accuracy","Standard deviation of MOS"]
 
         self.variable = StringVar(self)
         self.variable.set(ToolOption[0])
@@ -266,11 +326,13 @@ class StatisticalTools(Frame):
         opt = ttk.OptionMenu(self, self.variable, *ToolOption, command= self.definition)
         opt.grid(row=3, column=2, columnspan=2)
 
-        self.label = ttk.Label(self, text="  ")
+        self.label = Text(self, borderwidth=0)
+        self.label['state'] = 'disabled'
         self.label.grid(row=4,column=2, columnspan=2)
 
+
         ttk.Button(self, text='Start', style="Accent.TButton",
-               command=lambda: [self.get_tool(),self.go()]).grid(row=5,column=2, sticky=EW, columnspan=2)
+               command=lambda: [self.get_tool(),self.go()], cursor="hand2").grid(row=5,column=2, sticky=EW, columnspan=2)
 
 
     def get_tool(self):
@@ -279,22 +341,55 @@ class StatisticalTools(Frame):
         return tool
 
     def definition(self, event):
-        ToolOption = ["MOS of all stimuli", "Precision of subjective test", "Confidence Interval"]
+        ToolOption = ["MOS of all stimuli", "Precision of subjective test", "Confidence Interval","Accuracy","Standard deviation of MOS"]
 
         if self.variable.get() == ToolOption[0]:
             self.label.destroy()
-            self.label = Label(self,
-                               text="The MOS of all stimuli allows the user \n to see the computed MOS of the stimuli \n in their dataset.")
+            description = '''
+            Using the evaluation given by all of the observers, the tool computes the MOS for all the stimuli.
+            You can choose to save the result as a .csv by clicking the checkbox below.'''
 
-            self.label.grid(row=4,column=2, columnspan=2)
+            self.label = Text(self, wrap='word', borderwidth=0)
+            self.label.tag_configure('tag-center', justify='left')
+            self.label.insert(END, description, 'tag-center')
+            self.label['state'] = 'disabled'
+            self.label.grid(row=4, column=1, columnspan=4)
         if self.variable.get() == ToolOption[1]:
             self.label.destroy()
-            self.label = Label(self, text="The Precision of subjective test is \n a statistical tool developped \n by Margaret Pinson. ")
-            self.label.grid(row=4,column=2, columnspan=2)
+            description='''
+            The Precision of subjective test is a statistical tool developed by Margaret H.Pinson as seen in “Confidence Intervals for Subjective Tests and Objective Metrics That Assess Image, Video, Speech, or Audiovisual Quality”.
+
+            It uses the Student t-test on all pairs of stimuli A and B, where both stimuli were rated by the same subjects and the stimuli are drawn from the same dataset, to compare their rating distribution at 95% confidence level.'''
+
+            self.label = Text(self, wrap='word',borderwidth=0)
+            self.label.tag_configure('tag-center', justify='left')
+            self.label.insert(END,description, 'tag-center')
+            self.label['state'] = 'disabled'
+            self.label.grid(row=4,column=1, columnspan=4)
+
         if self.variable.get() == ToolOption[2]:
             self.label.destroy()
-            self.label = Label(self, text="CI ")
-            self.label.grid(row=4,column=2, columnspan=2)
+            description = '''CI.'''
+
+            self.label = Text(self, wrap='word', borderwidth=0)
+            self.label.tag_configure('tag-center', justify='left')
+            self.label.insert(END, description, 'tag-center')
+            self.label['state'] = 'disabled'
+            self.label.grid(row=4, column=1, columnspan=4)
+        if self.variable.get() == ToolOption[3]:
+            self.label.destroy()
+            description = '''
+                        The Accuracy test is a statistical tool developed by Yana Nehmé as seen in ‘Comparison of subjective methods for quality assessment of 3d graphics in virtual reality’.
+
+                        To study the difference of accuracy between the two methods, Yana Nehme used an unpaired two-samples Wilcoxon test. 
+                        '''
+
+            self.label = Text(self, wrap='word', borderwidth=0)
+            self.label.tag_configure('tag-center', justify='left')
+            self.label.insert(END, description, 'tag-center')
+            self.label['state'] = 'disabled'
+            self.label.grid(row=4, column=1, columnspan=4)
+
 
     def get_list(self):
         return [self.text]
@@ -333,8 +428,42 @@ class StatisticalTools(Frame):
             plt.plot(E, D)
             plt.show()
         elif tool == "Confidence Interval":
-            CI(filename[0])
+            CI(f)
+        elif tool == "Accuracy":
+            accuracy(f)
+        elif tool == "Standard deviation of MOS":
+            standard_deviation(f)
 
+
+class About(Frame):
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.text = ''
+        self.tool = ''
+
+        for i in range(6):
+            self.grid_columnconfigure(i, weight=1)
+            self.grid_rowconfigure(i, weight=1)
+
+        #Menu
+        label = ttk.Label(self, text=" ", background="#007fff")
+        label.grid(row=0, column=0, sticky = EW, columnspan=7, ipadx = 10, ipady =20)
+
+        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0,column=0, sticky=W)
+        Button(self, text="Home",
+                   command=lambda: controller.show_frame("StartPage"),foreground="#ffffff", background="#007fff",borderwidth=0, highlightthickness=0, cursor="hand2")\
+            .grid(row=0,column=1, sticky=E)
+        Button(self, text="Add a dataset",
+               command=lambda: controller.show_frame("FileSelection"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=2, sticky=E)
+        Button(self, text="Statistical tools",
+               command=lambda: controller.show_frame("StatisticalTools"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=3, sticky=E)
+        Button(self, text="About",
+               command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky=E)
 
 
 if __name__ == "__main__":

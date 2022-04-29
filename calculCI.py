@@ -135,9 +135,9 @@ def calcul_nbcomb(nbObserver, groups):
 
 
 #读取数据
-def CI(origiPath):
+def CI(data):
 
-    data = pd.read_csv(origiPath) #行标不算一行
+    #data = pd.read_csv(origiPath) #行标不算一行
     print(data)
     nbObserver = data.shape[1] - 2
     print(nbObserver)
