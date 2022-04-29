@@ -1,4 +1,4 @@
-#Code made by Margaret Pinson
+#Code translated from Matlab file made by Margaret Pinson
 
 import numpy as np
 
@@ -17,7 +17,7 @@ def bew_to_curve(bew=None, deltaS=None):
     # different MOS deltas, based on Student's t-test better/equivalent/worse
 
     delta = 0.1
-    bins = np.arange(0, 2.1, 0.1)
+    bins = np.arange(0, 2.1, delta)
 
     bin_lower = bins - delta / 2
     bin_upper = bins + delta / 2
@@ -35,7 +35,6 @@ def bew_to_curve(bew=None, deltaS=None):
     # print results just below and just above 95%.
     # let the user choose which is closer.
 
-
     v = np.where(better > 0.95)
     tmp = v[0][0]
 
@@ -47,4 +46,6 @@ def bew_to_curve(bew=None, deltaS=None):
 
     print(100*better[tmp], "% at ", bins[tmp])
 
+
+    #show those results in a window
     return better, bins
