@@ -44,4 +44,11 @@ except ImportError:
 finally:
     import xlrd
 
+try:
+    import pandastable
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 'pandastable'])
+finally:
+    import pandastable
+
 
