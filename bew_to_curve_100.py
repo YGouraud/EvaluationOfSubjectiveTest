@@ -12,7 +12,7 @@ def sign_diff(bew, lbin, ubin, cnt, deltaS):
     return r
 
 
-def bew_to_curve(bew=None, deltaS=None):
+def bew_to_curve_100(bew=None, deltaS=None):
     # Compute fraction of MOS comparisons that are significantly different for
     # different MOS deltas, based on Student's t-test better/equivalent/worse
     # this code is intended for a 100 point scale, instead of a 5-level scale.
