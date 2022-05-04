@@ -24,7 +24,10 @@ from Sta__Dev_MOS import *
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
+
+
 class SampleApp(Tk):
+    """The main frame window"""
 
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
@@ -48,7 +51,7 @@ class SampleApp(Tk):
 
         self.frames = {}
 
-        for F in (StartPage, FileSelection, OurDatasets, DatasetSelection, StatisticalTools, About):
+        for F in (StartPage, FileSelection, OurDatasets, DatasetSelection, NewDatasetSelection, StatisticalTools, About):
             #, FileSelection, OurDatasets, DatasetsInfo, DatsetsInfo2, StatisticalTools, PageEnd
             page_name = F.__name__
             frame = F(parent=container, controller=self)
@@ -70,6 +73,7 @@ class SampleApp(Tk):
 
 
 class StartPage(Frame):
+    """The starting page of our tool"""
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -105,8 +109,9 @@ class StartPage(Frame):
                             command=lambda: controller.show_frame("OurDatasets"), cursor="hand2")\
             .grid(row=3,column=2, sticky =EW, columnspan =2, ipady=10)
 
-class FileSelection(Frame):
 
+class FileSelection(Frame):
+    """Use an user provided dataset"""
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.sheet_number = None
@@ -281,10 +286,80 @@ class FileSelection(Frame):
 
         return self.dataset
 
+class NewDatasetSelection(Frame):
+    """Select the part of user provided dataset needed to formalize it and ingest it"""
 
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.table = None
+        self.subdataset = None
+
+        for i in range(6):
+            self.grid_columnconfigure(i, weight=1)
+            self.grid_rowconfigure(i, weight=1)
+
+        # Menu
+        label = ttk.Label(self, text=" ", background="#007fff")
+        label.grid(row=0, column=0, sticky='ew', columnspan=7, ipadx=10, ipady=20)
+
+        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+                                                                                                     sticky=W)
+
+        Button(self, text="Home",
+               command=lambda: controller.show_frame("StartPage"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2") \
+            .grid(row=0, column=1, sticky='e', padx=10)
+        Button(self, text="Add a dataset",
+               command=lambda: controller.show_frame("FileSelection"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=2, sticky='e', padx=10)
+        Button(self, text="Statistical tools",
+               command=lambda: controller.show_frame("StatisticalTools"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=3, sticky='e',padx=10)
+        Button(self, text="About",
+               command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky='e', padx=10)
+
+
+
+        label = Label(self, text="Choose precisely what part of the file you want to use", foreground="#ffffff", background="#007fff")
+        label.grid(column=0, row=1, columnspan=5, sticky=N)
+
+        Button(self, height=2, width=35, text="Select this SubDataset ?",
+               command=lambda: [self.table.remove(), controller.show_frame("StatisticalTools")]).grid(column=1, row=7, columnspan=3,  sticky='ew')
+
+    def get_new_dataset(self):
+        window = Frame(self)
+        window.grid(column=0, row=2, rowspan=1, columnspan=5, sticky='news')
+
+        df = self.controller.get_page("FileSelection").get_current_dataset()
+
+        self.table = Table(window, dataframe=df, showtoolbar=False, showstatusbar=False)
+        self.table.showIndex()
+        self.table.show()
+        return
+
+    def get_existing_dataset(self):
+        window = Frame(self)
+        window.grid(column=0, row=2, rowspan=1, columnspan=5, sticky='news')
+
+        df = self.controller.get_page("OurDatasets").get_current_dataset()
+
+        self.table = Table(window, dataframe=df, showtoolbar=False, showstatusbar=False)
+        self.table.showIndex()
+        self.table.show()
+        return
+
+    def use_subdataset(self):
+        df = self.table.getSelectedDataFrame()
+        # flatten multi-index
+        df.columns = df.columns.get_level_values(0)
+        self.subdataset = df
+        return self.subdataset
 
 
 class OurDatasets(Frame):
+    """Select an existing dataset from the University of Nantes you want to use"""
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -383,13 +458,13 @@ class OurDatasets(Frame):
         return self.current_dataset
 
 class DatasetSelection(Frame):
-    """Basic test frame for the table"""
+    """Select the part of an existing dataset you want to use"""
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-        #self.geometry = '500x500'
         self.table = None
+        self.subdataset = None
 
         for i in range(6):
             self.grid_columnconfigure(i, weight=1)
@@ -446,10 +521,17 @@ class DatasetSelection(Frame):
         self.table.show()
         return
 
-    def use_dataset(self):
-        return self.table.getSubdata()
+    def use_subdataset(self):
+        df = self.table.getSelectedDataFrame()
+        # flatten multi-index
+        df.columns = df.columns.get_level_values(0)
+        self.subdataset = df
+        return self.subdataset
+
+
 
 class StatisticalTools(Frame):
+    """Select which statistical tool you want to use on the selected dataset"""
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -599,7 +681,7 @@ class StatisticalTools(Frame):
         print(save)
 
         #Getting the dataset that is going to be used
-        f = app.get_page("DatasetSelection").use_dataset()
+        f = app.get_page("DatasetSelection").use_subdataset()
 
         print(f)
 
@@ -636,6 +718,7 @@ class StatisticalTools(Frame):
 
 
 class About(Frame):
+    """Information about our tool"""
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
