@@ -159,7 +159,8 @@ class FileSelection(Frame):
             .grid(row=1, column=4)
 
         ttk.Button(self, text='Continue', style="Accent.TButton",
-               command=lambda: [controller.get_page("DatasetSelection").get_new_dataset(),controller.show_frame("DatasetSelection")], , cursor="hand2")\
+                   command=lambda: [controller.get_page("DatasetSelection").get_new_dataset(),controller.show_frame("DatasetSelection")],
+                   cursor="hand2")\
             .grid(row=5,column=2, columnspan=2, sticky=EW)
 
     def select_file(self):
