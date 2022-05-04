@@ -510,7 +510,7 @@ class StatisticalTools(Frame):
         return tool
 
     def definition(self, event):
-        ToolOption = ["MOS of all stimuli", "Precision of subjective test", "Confidence Interval","Accuracy","Standard deviation of MOS"]
+        ToolOption = ["MOS of all stimuli", "Precision of subjective test (ACR-5)", "Precision of subjective test (ACR-100)", "Confidence Interval","Accuracy","Standard deviation of MOS"]
 
         if self.variable.get() == ToolOption[0]:
             self.label.destroy()
@@ -528,7 +528,9 @@ class StatisticalTools(Frame):
             description='''
             The Precision of subjective test is a statistical tool developed by Margaret H.Pinson as seen in “Confidence Intervals for Subjective Tests and Objective Metrics That Assess Image, Video, Speech, or Audiovisual Quality”.
 
-            It uses the Student t-test on all pairs of stimuli A and B, where both stimuli were rated by the same subjects and the stimuli are drawn from the same dataset, to compare their rating distribution at 95% confidence level.'''
+            It uses the Student t-test on all pairs of stimuli A and B, where both stimuli were rated by the same subjects and the stimuli are drawn from the same dataset, to compare their rating distribution at 95% confidence level.
+            
+            This tool is for ACR-5 ratings !'''
 
             self.label = Text(self, wrap='word',borderwidth=0)
             self.label.tag_configure('tag-center', justify='left')
@@ -538,6 +540,21 @@ class StatisticalTools(Frame):
 
         if self.variable.get() == ToolOption[2]:
             self.label.destroy()
+            description = '''
+            The Precision of subjective test is a statistical tool developed by Margaret H.Pinson as seen in “Confidence Intervals for Subjective Tests and Objective Metrics That Assess Image, Video, Speech, or Audiovisual Quality”.
+
+            It uses the Student t-test on all pairs of stimuli A and B, where both stimuli were rated by the same subjects and the stimuli are drawn from the same dataset, to compare their rating distribution at 95% confidence level.
+
+            This tool is for ACR-100 ratings !'''
+
+            self.label = Text(self, wrap='word', borderwidth=0)
+            self.label.tag_configure('tag-center', justify='left')
+            self.label.insert(END, description, 'tag-center')
+            self.label['state'] = 'disabled'
+            self.label.grid(row=4, column=1, columnspan=4)
+
+        if self.variable.get() == ToolOption[3]:
+            self.label.destroy()
             description = '''CI.'''
 
             self.label = Text(self, wrap='word', borderwidth=0)
@@ -545,7 +562,7 @@ class StatisticalTools(Frame):
             self.label.insert(END, description, 'tag-center')
             self.label['state'] = 'disabled'
             self.label.grid(row=4, column=1, columnspan=4)
-        if self.variable.get() == ToolOption[3]:
+        if self.variable.get() == ToolOption[4]:
             self.label.destroy()
             description = '''
                         The Accuracy test is a statistical tool developed by Yana Nehmé as seen in ‘Comparison of subjective methods for quality assessment of 3d graphics in virtual reality’.
