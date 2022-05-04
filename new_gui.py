@@ -1,10 +1,12 @@
+import tkinter
 from tkinter import *
 
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
 from tkinter import ttk
+
 from pandas import *
-from pandastable import Table
+from pandastable import Table, AutoScrollbar
 
 from ratings_to_bew import *
 from bew_to_curve import *
@@ -23,7 +25,7 @@ class SampleApp(Tk):
         Tk.__init__(self, *args, **kwargs)
 
         self.title("PTRANS")
-        self.geometry('1000x500')
+        self.geometry('1000x600')
 
         # We change the style of the interface
         self.style = ttk.Style(self)
@@ -100,9 +102,11 @@ class FileSelection(Frame):
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
+        self.sheet_number = None
         self.controller = controller
         self.file = ''
         self.filetype = ''
+        self.dataset = None
 
         for i in range(6):
             self.grid_columnconfigure(i, weight=1)
@@ -149,7 +153,7 @@ class FileSelection(Frame):
             .grid(row=1, column=4)
 
         ttk.Button(self, text='Continue', style="Accent.TButton",
-               command=lambda: controller.show_frame("PageThree"))\
+               command=lambda: [controller.get_page("DatasetSelection").get_new_dataset(),controller.show_frame("DatasetSelection")])\
             .grid(row=5,column=2, columnspan=2, sticky=EW)
 
     def select_file(self):
@@ -198,6 +202,25 @@ class FileSelection(Frame):
         self.sheet_number = sheet
         return sheet
 
+    def get_current_dataset(self):
+        filename = self.get_file()
+
+        if filename[1] == 'csv':
+            self.dataset = pandas.read_csv(filename[0])
+        elif filename[1] == 'xls':
+            self.dataset = pandas.read_excel(filename[0], sheet_name=(self.get_sheet_num() - 1), keep_default_na=True)
+        elif filename[1] == 'json':
+            self.dataset = pandas.read_json(filename[0])
+        elif filename[1] == 'xml':
+            self.dataset = pandas.read_xml(filename[0])
+        else:
+            print("Invalid Format")
+            self.dataset = None
+
+        return self.dataset
+
+
+
 
 class OurDatasets(Frame):
 
@@ -208,6 +231,8 @@ class OurDatasets(Frame):
         for i in range(6):
             self.grid_columnconfigure(i, weight=1)
             self.grid_rowconfigure(i, weight=1)
+
+        self.button_dict = {}
 
         #Menu
         label = ttk.Label(self, text=" ", background="#007fff")
@@ -230,31 +255,62 @@ class OurDatasets(Frame):
         ttk.Label(self, text="Here are the already available datasets, you may choose one to use.",
                   background="#007fff").grid(row=2, column=2, columnspan=2)
 
+        #Create a text widget with a scrollbar for buttons
+        self.text_box = Text(self, wrap="none")
+        self.text_box.tag_configure("center", justify='center')
+        vsb = Scrollbar(self, command=self.text_box.yview)
+        self.text_box.configure(yscrollcommand=vsb.set)
+        self.text_box.grid(column=2, columnspan=2)
+
+
         self.datasets = None
         self.datasets_name = []
         self.current_dataset = None
         self.title = "Test"
 
-        # Create the button for the dataset
+        # Create a button for each dataset to select it
         self.dataset_list()
 
         ttk.Button(self, text="  Return to the first page   ",
-                   command=lambda: controller.show_frame("StartPage")).grid()
+                   command=lambda: controller.show_frame("StartPage")).grid(column=2, columnspan=2)
         ttk.Button(self, text='            Continue               ', style="Accent.TButton",
-                   command=lambda: [controller.get_page("DatasetSelection").get_dataset(),
-                                    controller.show_frame("DatasetSelection")]).grid()
+                   command=lambda: [controller.get_page("DatasetSelection").get_existing_dataset(),
+                                    controller.show_frame("DatasetSelection")]).grid(column=2, columnspan=2)
 
     def dataset_list(self):
         dataset_dict = load_dataset()
         self.datasets = dataset_dict
+
         for name in dataset_dict:
             self.datasets_name.append(name)
-            self.create_Button(name)
+            button = self.create_Button(name)
+            self.text_box.window_create("end", window=button)
+            self.text_box.insert("end", "\n")
+            #button.grid(column=2, columnspan=2)
+            self.button_dict[name] = button
+
+        self.text_box.tag_add("center", "1.0", "end")
+        self.text_box.config(state="disabled")
+
         return
 
     def create_Button(self, name):
-        Button(self, height=2, width=50, text=name,
-               command=lambda: self.assign_dataset(name)).grid(column=2, columnspan=2)
+        style = ttk.Style()
+        style.configure('SunkableButton.TButton')
+        style.map("SunkableButton.TButton",
+                  foreground=[('disabled','red'),('!disabled','black')],
+                  background=[('disabled','#007fff'),('!disabled','red')],
+                  activebackground=[('disabled','#007fff'),('!disabled','red')])
+        return ttk.Button(self, text=name, command=lambda: [self.assign_dataset(name), self.start(name)],
+                          style='SunkableButton.TButton')
+
+    #Change the state of a pressed button
+    def start(self, name):
+        for a in self.button_dict:
+            if a != name:
+                self.button_dict[a].state(['!disabled'])
+                pass
+        self.button_dict[name].state(['disabled'])
         return
 
     def assign_dataset(self, name):
@@ -270,20 +326,62 @@ class DatasetSelection(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-        self.geometry = '500x500'
+        #self.geometry = '500x500'
         self.table = None
 
-        label = Label(self, text="Choose precisely what part of the file you want to use", background="#6680CC")
-        label.grid(column=1, row=0)
+        for i in range(6):
+            self.grid_columnconfigure(i, weight=1)
+            self.grid_rowconfigure(i, weight=1)
+
+        # Menu
+        label = ttk.Label(self, text=" ", background="#007fff")
+        label.grid(row=0, column=0, sticky='ew', columnspan=7, ipadx=10, ipady=20)
+
+        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+                                                                                                     sticky=W)
+
+        Button(self, text="Home",
+               command=lambda: controller.show_frame("StartPage"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2") \
+            .grid(row=0, column=1, sticky='e', padx=10)
+        Button(self, text="Add a dataset",
+               command=lambda: controller.show_frame("FileSelection"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=2, sticky='e', padx=10)
+        Button(self, text="Statistical tools",
+               command=lambda: controller.show_frame("StatisticalTools"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=3, sticky='e',padx=10)
+        Button(self, text="About",
+               command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky='e', padx=10)
+
+
+
+        label = Label(self, text="Choose precisely what part of the file you want to use", foreground="#ffffff", background="#007fff")
+        label.grid(column=0, row=1, columnspan=5, sticky=N)
+
         Button(self, height=2, width=35, text="Select this SubDataset ?",
-               command=lambda: controller.show_frame("StatisticalTools")).grid(column=1, row=5)
+               command=lambda: [self.table.remove(), controller.show_frame("StatisticalTools")]).grid(column=1, row=7, columnspan=3,  sticky='ew')
 
+    def get_new_dataset(self):
+        window = Frame(self)
+        window.grid(column=0, row=2, rowspan=1, columnspan=5, sticky='news')
 
-    def get_dataset(self):
+        df = self.controller.get_page("FileSelection").get_current_dataset()
+
+        self.table = Table(window, dataframe=df, showtoolbar=False, showstatusbar=False)
+        self.table.showIndex()
+        self.table.show()
+        return
+
+    def get_existing_dataset(self):
+        window = Frame(self)
+        window.grid(column=0, row=2, rowspan=1, columnspan=5, sticky='news')
+
         df = self.controller.get_page("OurDatasets").get_current_dataset()
-        self.table = pt = Table(self, dataframe=df, showtoolbar=True, showstatusbar=True)
-        pt.showIndex()
-        pt.show()
+
+        self.table = Table(window, dataframe=df, showtoolbar=False, showstatusbar=False)
+        self.table.showIndex()
+        self.table.show()
         return
 
     def use_dataset(self):
@@ -320,26 +418,26 @@ class StatisticalTools(Frame):
                borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky=E)
 
         ttk.Label(self, text="Which statistical tool do you want to use ? ") \
-            .grid(row=2, column=2, columnspan=2)
+            .grid(row=1, column=2, columnspan=2)
 
         # defining option list
-        ToolOption = ["Choose an option", "MOS of all stimuli", "Precision of subjective test", "Confidence Interval"]
+        ToolOption = ["Choose an option", "MOS of all stimuli", "Precision of subjective test (ACR-5)", "Precision of subjective test (ACR-100)", "Confidence Interval"]
 
         self.variable = StringVar(self)
         self.variable.set(ToolOption[0])
 
         opt = ttk.OptionMenu(self, self.variable, *ToolOption, command= self.definition)
-        opt.grid(row=3, column=2, columnspan=2)
+        opt.grid(row=2, column=2, columnspan=2)
+
+        self.label = ttk.Label(self, text="  ")
+        self.label.grid(row=3, column=2, columnspan=2)
 
         self.save = IntVar(self)
         check = Checkbutton(self, variable=self.save, text="Save results in a xls file ?")
-        check.grid()
-
-        self.label = ttk.Label(self, text="  ")
-        self.label.grid(row=4,column=2, columnspan=2)
+        check.grid(row=4, column=2, columnspan=2)
 
         ttk.Button(self, text='Start', style="Accent.TButton",
-               command=lambda: [self.get_tool(),self.go()]).grid(row=5,column=2, sticky=EW, columnspan=2)
+               command=lambda: [self.get_tool(), self.go()]).grid(row=5,column=2, sticky=EW, columnspan=2)
 
 
     def get_tool(self):
@@ -355,15 +453,15 @@ class StatisticalTools(Frame):
             self.label = Label(self,
                                text="The MOS of all stimuli allows the user \n to see the computed MOS of the stimuli \n in their dataset.")
 
-            self.label.grid(row=4,column=2, columnspan=2)
+            self.label.grid(row=3,column=2, columnspan=2)
         if self.variable.get() == ToolOption[1]:
             self.label.destroy()
             self.label = Label(self, text="The Precision of subjective test is \n a statistical tool developped \n by Margaret Pinson. ")
-            self.label.grid(row=4,column=2, columnspan=2)
+            self.label.grid(row=3,column=2, columnspan=2)
         if self.variable.get() == ToolOption[2]:
             self.label.destroy()
             self.label = Label(self, text="CI ")
-            self.label.grid(row=4,column=2, columnspan=2)
+            self.label.grid(row=3,column=2, columnspan=2)
 
     def get_list(self):
         return [self.text]
@@ -387,21 +485,8 @@ class StatisticalTools(Frame):
         save = app.get_page("StatisticalTools").get_save()
         print(save)
 
-        if filename[1] == 'csv':
-            f = pandas.read_csv(filename[0])
-        elif filename[1] == 'xls':
-            f = pandas.read_excel(filename[0], sheet_name=(sheet_num - 1), usecols='A:AG', index_col=0, header=1,
-                                  keep_default_na=True)
-        elif filename[1] == 'json':
-            f = pandas.read_json(filename[0])
-        elif filename[1] == 'xml':
-            f = pandas.read_xml(filename[0])
-        else:
-            print("Invalid Format")
-            f = None
-
-        if f is None:
-            f = app.get_page("DatasetSelection").use_dataset()
+        #Getting the dataset that is going to be used
+        f = app.get_page("DatasetSelection").use_dataset()
 
         print(f)
 
