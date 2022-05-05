@@ -150,15 +150,6 @@ class FileSelection(Frame):
 
         open_button.grid(row=2, column=2, columnspan=2)
 
-        # defining option list for the dropdown menu
-        # the menu only appears if the file is an xls file
-        OptionSheet = [1, 1, 2, 3]
-
-        self.variable = IntVar(self)
-        self.variable.set(OptionSheet[0])
-
-        self.opt = ttk.OptionMenu(self, self.variable, *OptionSheet)
-
         # the button open a popup with more info about the dataset structure
         ttk.Button(self, text='Information',
                    command=lambda: self.popup_info(), cursor='hand2')\
@@ -170,6 +161,7 @@ class FileSelection(Frame):
             .grid(row=5,column=2, columnspan=2, sticky=EW)
 
     def select_file(self):
+        """Function that let the user select a file to use"""
         filetypes = (
             ('csv files', '*.csv'),
             ('xls files', '*.xls'),
@@ -191,11 +183,35 @@ class FileSelection(Frame):
         ft = filename.split(".").pop()
         self.file = filename
         self.filetype = ft
+        self.name = filename.split("/").pop()
+
+    """
+    def sheet_number(self):
+        Give the number of sheet in a xls or xlsx file
+        df = pandas.read_excel(self.file, sheet_name=None)  # read all sheets
+        sheet = len(df)
+        return sheet
+    """
 
     def option(self):
+        """Defining option list for the dropdown menu
+            The menu only appears if the file is an xls file"""
+
         if self.filetype == 'xls' or self.filetype == 'xlsx':
-            ttk.Label(self, text="Which sheet to use ?").grid(row=3, column=1)
-            self.opt.grid(row=3, column=2)
+
+            df = pandas.read_excel(self.file, sheet_name=None)  # read all sheets
+            sheet = len(df)
+            option_sheet = [i for i in range(sheet+1)]
+
+            self.variable = IntVar(self)
+            self.variable.set(option_sheet[0])
+
+            self.opt = ttk.OptionMenu(self, self.variable, *option_sheet)
+
+            ttk.Label(self, text="Name of the file : ").grid(row=3, column=1)
+            ttk.Label(self, text=self.name).grid(row=3, column=2, columnspan=2)
+            ttk.Label(self, text="Which sheet to use ?").grid(row=4, column=1)
+            self.opt.grid(row=4, column=2, columnspan=2)
         else:
             pass
 
@@ -698,7 +714,7 @@ class StatisticalTools(Frame):
             B, C = ratings_to_bew('inf', f)
             D, E = bew_to_curve(B, C)
             plt.plot(E, D)
-            plt.title(filename[0])
+            plt.title(filename[2])
             plt.xlabel('DeltaS')
             plt.ylabel('PI')
             plt.grid(True, linestyle='-')
