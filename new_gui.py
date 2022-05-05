@@ -51,7 +51,7 @@ class SampleApp(Tk):
 
         self.frames = {}
 
-        for F in (StartPage, FileSelection, OurDatasets, DatasetSelection, NewDatasetSelection, StatisticalTools, About):
+        for F in (StartPage, FileSelection, OurDatasets, DatasetSelection, NewDatasetSelection, StatisticalTools, ShowResults, About):
             #, FileSelection, OurDatasets, DatasetsInfo, DatsetsInfo2, StatisticalTools, PageEnd
             page_name = F.__name__
             frame = F(parent=container, controller=self)
@@ -118,6 +118,7 @@ class FileSelection(Frame):
         self.controller = controller
         self.file = ''
         self.filetype = ''
+        self.name = ''
         self.dataset = None
 
         for i in range(6):
@@ -192,7 +193,7 @@ class FileSelection(Frame):
         self.filetype = ft
 
     def option(self):
-        if self.filetype == 'xls':
+        if self.filetype == 'xls' or self.filetype == 'xlsx':
             ttk.Label(self, text="Which sheet to use ?").grid(row=3, column=1)
             self.opt.grid(row=3, column=2)
         else:
@@ -262,7 +263,7 @@ class FileSelection(Frame):
         ttk.Button(popup, text="Back", command=lambda: [popup.destroy(), self.popup_info()], cursor="hand2").pack(side=LEFT, padx=30)
 
     def get_file(self):
-        return [self.file, self.filetype]
+        return [self.file, self.filetype, self.name]
 
     def get_sheet_num(self):
         sheet = self.variable.get()
@@ -274,7 +275,7 @@ class FileSelection(Frame):
 
         if filename[1] == 'csv':
             self.dataset = pandas.read_csv(filename[0])
-        elif filename[1] == 'xls':
+        elif filename[1] == 'xls' or filename[1] == 'xlsx':
             self.dataset = pandas.read_excel(filename[0], sheet_name=(self.get_sheet_num() - 1), keep_default_na=True)
         elif filename[1] == 'json':
             self.dataset = pandas.read_json(filename[0])
@@ -322,7 +323,7 @@ class NewDatasetSelection(Frame):
 
 
 
-        label = Label(self, text="Choose precisely what part of the file you want to use", foreground="#ffffff", background="#007fff")
+        label = Label(self, text="To simplify the ingestion of your dataset, please ", foreground="#ffffff", background="#007fff")
         label.grid(column=0, row=1, columnspan=5, sticky=N)
 
         Button(self, height=2, width=35, text="Select this SubDataset ?",
@@ -468,6 +469,7 @@ class DatasetSelection(Frame):
 
         for i in range(6):
             self.grid_columnconfigure(i, weight=1)
+        for i in range(8):
             self.grid_rowconfigure(i, weight=1)
 
         # Menu
@@ -497,7 +499,12 @@ class DatasetSelection(Frame):
         label.grid(column=0, row=1, columnspan=5, sticky=N)
 
         Button(self, height=2, width=35, text="Select this SubDataset ?",
-               command=lambda: [self.table.remove(), controller.show_frame("StatisticalTools")]).grid(column=1, row=7, columnspan=3,  sticky='ew')
+               command=lambda: [self.table.remove(), controller.show_frame("StatisticalTools")])\
+            .grid(column=1, row=4, columnspan=3,  sticky='ew')
+
+        Button(self, height=2, width=35, text="Use the full dataset ?",
+               command=lambda: [self.table.remove(), controller.show_frame("StatisticalTools")])\
+            .grid(column=1, row=5,columnspan=3,sticky='ew')
 
     def get_new_dataset(self):
         window = Frame(self)
@@ -691,7 +698,7 @@ class StatisticalTools(Frame):
             B, C = ratings_to_bew('inf', f)
             D, E = bew_to_curve(B, C)
             plt.plot(E, D)
-            plt.title(filename[2])
+            plt.title(filename[0])
             plt.xlabel('DeltaS')
             plt.ylabel('PI')
             plt.grid(True, linestyle='-')
@@ -715,6 +722,83 @@ class StatisticalTools(Frame):
             accuracy(f)
         elif tool == "Standard deviation of MOS":
             standard_deviation(f)
+
+class ShowResults(Frame):
+    """Showing the result of the statistical tool on the dataset"""
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.table = None
+        self.subdataset = None
+
+        for i in range(6):
+            self.grid_columnconfigure(i, weight=1)
+        for i in range(6):
+            self.grid_rowconfigure(i, weight=1)
+
+        # Menu
+        label = ttk.Label(self, text=" ", background="#007fff")
+        label.grid(row=0, column=0, sticky='ew', columnspan=7, ipadx=10, ipady=20)
+
+        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+                                                                                                     sticky=W)
+
+        Button(self, text="Home",
+               command=lambda: controller.show_frame("StartPage"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2") \
+            .grid(row=0, column=1, sticky='e', padx=10)
+        Button(self, text="Add a dataset",
+               command=lambda: controller.show_frame("FileSelection"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=2, sticky='e', padx=10)
+        Button(self, text="Statistical tools",
+               command=lambda: controller.show_frame("StatisticalTools"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=3, sticky='e',padx=10)
+        Button(self, text="About",
+               command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
+               borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky='e', padx=10)
+
+
+
+        label = Label(self, text="Choose precisely what part of the file you want to use", foreground="#ffffff", background="#007fff")
+        label.grid(column=0, row=1, columnspan=5, sticky=N)
+
+        Button(self, height=2, width=35, text="Select this SubDataset ?",
+               command=lambda: [self.table.remove(), controller.show_frame("StatisticalTools")])\
+            .grid(column=1, row=4, columnspan=3,  sticky='ew')
+
+        Button(self, height=2, width=35, text="Use the full dataset ?",
+               command=lambda: [self.table.remove(), controller.show_frame("StatisticalTools")])\
+            .grid(column=1, row=5,columnspan=3,sticky='ew')
+
+    def get_new_dataset(self):
+        window = Frame(self)
+        window.grid(column=0, row=2, rowspan=1, columnspan=5, sticky='news')
+
+        df = self.controller.get_page("FileSelection").get_current_dataset()
+
+        self.table = Table(window, dataframe=df, showtoolbar=False, showstatusbar=False)
+        self.table.showIndex()
+        self.table.show()
+        return
+
+    def get_existing_dataset(self):
+        window = Frame(self)
+        window.grid(column=0, row=2, rowspan=1, columnspan=5, sticky='news')
+
+        df = self.controller.get_page("OurDatasets").get_current_dataset()
+
+        self.table = Table(window, dataframe=df, showtoolbar=False, showstatusbar=False)
+        self.table.showIndex()
+        self.table.show()
+        return
+
+    def use_subdataset(self):
+        df = self.table.getSelectedDataFrame()
+        # flatten multi-index
+        df.columns = df.columns.get_level_values(0)
+        self.subdataset = df
+        return self.subdataset
 
 
 class About(Frame):
