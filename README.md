@@ -18,13 +18,13 @@ The aim of this project was to provide a centralized tool that could analyze dat
 ## Needed libraries 
 
 First, in order to run the tool, a user needs to import all the necessary packages :
-- pandas : used for data manipulation
-- tkinter : used to create the Graphical User Interface
-- matplotlib : used for statistical tools and data visualization
-- numpy : used for statistical tools
-- scipy : numpy’s extension, used for statistical functions
-- pandastable : used to get a preview of the dataset in the GUI
-- xlrd
+- [pandas](https://pandas.pydata.org/) : used for data manipulation
+- [tkinter](https://docs.python.org/fr/3/library/tkinter.html) : used to create the Graphical User Interface
+- [matplotlib](https://matplotlib.org/) : used for statistical tools and data visualization
+- [numpy](https://numpy.org/) : used for statistical tools
+- [scipy](https://scipy.org/) : numpy’s extension, used for statistical functions
+- [pandastable](https://pandastable.readthedocs.io/en/latest/description.html) : used to get a preview of the dataset in the GUI
+- [xlrd](https://xlrd.readthedocs.io/en/latest/)
 
 This can be done easily by running the python file : import_file.py. This file will automatically import all of the necessary packages which can take a couple minutes.
 
@@ -72,30 +72,30 @@ The transformation is then done by our tool using the transformData.py file.
 ### Mean Opinion Score (MOS)
 For each stimulus, the tool computes the Mean Opinion Score which is the average rating given by the observers.
 
-Output table
-
+**Output table :**
+![mos](image/mos_example.png)
 
 ### Standard Deviation of MOS
 This tool shows how the standard deviation of MOS changes as the number of observers increases
 
-Output chart:
+**Output chart:**
+![sd_mos](image/sd_example.png)
 
-X-axis: 
-is the number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset.
-The last abscissa will be the total number of observers in the input dataset.
-Y-axis: 
-Standard Deviation of MOS
-The width of the image
-It represents the distribution interval of the standard deviation of MOS.
+X-axis: The number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset. The last abscissa will be the total number of observers in the input dataset.
+
+Y-axis: Standard Deviation of MOS
+
+The width of the image : It represents the distribution interval of the standard deviation of MOS.
 
 ### Confidence interval
 The Confidence Interval is a statistical tool developed by Yana Nehme in  “Exploring Crowdsourcing for Subjective Quality Assessment of 3D Graphics”. The Confidence Intervals tool analyzes the change in the 95% confidence interval of the subjective test experimental scores which are tested with different numbers of observers. 
 It shows the distribution of the Confidence Interval Width for different group sizes. The system will sample the observers of the input dataset to form many unique groups (maximum 200 groups), with specific group size and unique combinations. Then the system will calculate the confidence interval width of these sampling groups one by one, and then draw them into a box plot.
 
-Output chart:
+**Output chart:**
+![CI](image/ci_example.png)
 
-X-axis: The number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset.
-The last abscissa will be the total number of observers in the input dataset.
+X-axis: The number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset. The last abscissa will be the total number of observers in the input dataset.
+
 Y-axis:  Confidence interval width. Because the 95% confidence interval is computed here, the system also directly calculates the standard deviation.
 
 ### Accuracy
@@ -103,14 +103,15 @@ The Accuracy test is a statistical tool developed by Yana Nehmé as seen in ‘C
 This test compares two independent sample groups and can determine if these two groups are statistically different. If the p-value (p) of the Wilcoxon test is < 0.05: Stimulus_1 median note is significantly different from Stimulus_2 median note with a p-value=p.
 To study the evolution of the subjective methods’ accuracy based on the number of observers, the Wilcoxon test is done several times with a different number of observers. These observers are randomly chosen within the dataset without repetition or duplication. 
 The program then studies the variation of accuracy number of pairs rated significantly different) according to the number of observers and plots the variation of accuracy between the tests.
-Output chart:
 
-X-axis: 
-The number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset. The last abscissa will be the total number of observers in the input dataset.
-Y-axis: 
-The number of pairs of stimuli rated significantly different in percentages of the total number
-The width of the image
-It represents the distribution interval of the accuracy of the different combinations under the current number of observers
+**Output chart:**
+![acc](image/acc_example.png)
+
+X-axis: The number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset. The last abscissa will be the total number of observers in the input dataset.
+
+Y-axis: The number of pairs of stimuli rated significantly different in percentages of the total number
+
+The width of the image: It represents the distribution interval of the accuracy of the different combinations under the current number of observers
 
 ### Precision of Subjective Test
 The Precision of subjective tests is a statistical tool developed by Margaret H.Pinson as seen in “Confidence Intervals for Subjective Tests and Objective Metrics That Assess Image, Video, Speech, or Audiovisual Quality”.
@@ -122,5 +123,5 @@ By plotting π as a function of ΔS, the link between the two can be observed. A
 
 On our tool, the test exists in two different versions made for ACR-5 and ACR-100 respectively.
 
-Output chart
+**Output chart:**
 
