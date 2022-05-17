@@ -5,10 +5,12 @@
 This project is part of the Transversal projects (PTRANS) organized by the Graduate School of Engineering of the University of Nantes, [Polytech Nantes](http://www.polytech.univ-nantes.fr/) that happened throughout the year 2021-2022. 
 
 This project involved three 4th year students of the school :
-- Chama El Majeny
-- Yvann Gouraud
-- Jiawen Liu
+- [Chama El Majeny](https://www.linkedin.com/in/chama-el-majeny-0642591bb/)
+- [Yvann Gouraud](https://www.linkedin.com/in/yvann-gouraud-6a5388209/)
+- [Jiawen Liu](https://www.linkedin.com/in/jiawen-liu-00bb6b225/)
+
 They worked on a project under the tutelage of Professor Patrick Le Callet from Polytech Nantes.
+
 This project was commissioned by Doctor Margaret H.Pinson from the Institute for Telecommunication Sciences (ITS), the research branch of the National Telecommunications and Information Administration (NTIA).
 
 The aim of this project was to provide a centralized tool that could analyze datasets obtained from subjective test quality assessment. Our tool can run several statistical analysis such as calculating the average MOS of each stimulus, and calculating the precision of the dataset using methods developed by Doctor Pinson and Ms Yana Nehmé.
@@ -42,6 +44,7 @@ The last column name is MOS (Mean Opinion Score).
 Each remaining column represents an observer. The number of columns can vary depending on the number of observers.
 
 ![data_structure](image/data_structure.gif)
+
 Fig 1 : Example for format 1
 
 ### Format 2: Other format
@@ -49,10 +52,13 @@ In this format, each row records an observational experiment and it contains all
 The data in this format needs to be converted into our standard format and then entered into the system for analysis. Thus, we need some more information to change the data structure.
 
 Three columns are necessary: observer, stimulus name, score.
+
 The datasets can contain additional attribute columns (but these attributes will be ignored).
+
 There is no requirement for column names, but you need to enter the column name information during the format conversion step.
 
 ![data_structure](image/other_structure.gif)
+
 Fig 2 : Example for format 2
 
 To fill in the information necessary, the user will be presented with the following screen :
