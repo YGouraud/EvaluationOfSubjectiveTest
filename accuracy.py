@@ -136,12 +136,22 @@ def accuracy(data):
     yy1 = ACC[:,2].T.tolist()[0]
     yy2 = ACC[:,3].T.tolist()[0]
 
+    """
     fig, ax = plt.subplots()
     plt.xticks(groups)
     plt.fill_between(groups, y1 = yy1, y2= yy2, alpha = 0.5, color = 'c', linestyle = "--")
     plt.plot(groups,yy0,"o-",markersize=2,linewidth=1.0)
     plt.xlabel('Nb of subjects')
     plt.ylabel('Accuracy')
+    """
 
-    plt.show()
+    fig = plt.figure(figsize=(10, 10), dpi=80)
+    ax = fig.add_subplot(111)
+    ax.set_xticklabels(groups)
+    ax.fill_between(groups, y1 = yy1, y2= yy2, alpha = 0.5, color = 'c', linestyle = "--")
+    ax.plot(groups,yy0,"o-",markersize=2,linewidth=1.0)
+    ax.set_xlabel('Nb of subjects')
+    ax.set_ylabel('Accuracy')
+    
+    return fig
 

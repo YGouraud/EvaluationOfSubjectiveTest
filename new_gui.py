@@ -1,10 +1,12 @@
 import tkinter
 from tkinter import *
+import threading
 
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
 from tkinter import ttk
 
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,  NavigationToolbar2Tk)
 from pandas import *
 from pandastable import Table, AutoScrollbar
 from PIL import ImageTk, Image
@@ -346,7 +348,8 @@ class NewDatasetSelection(Frame):
 
         Button(self, height=2, width=35, text="End of selection",
                command=lambda: [self.save_formalized_data(transform_data(self.dataset, self.stimuli, self.observer, self.rating)),
-                                 ])\
+                                controller.get_page("DatasetSelection").get_existing_dataset(),
+                                controller.show_frame("DatasetSelection")])\
             .grid(column=6, row=6, sticky='ew')
 
     def get_new_dataset(self, sheet_number=1):
@@ -408,6 +411,8 @@ class NewDatasetSelection(Frame):
 
     def save_formalized_data(self, data):
         self.formalized = data
+        self.controller.get_page("OurDatasets").current_dataset = data
+
 
 
     """
@@ -665,7 +670,7 @@ class StatisticalTools(Frame):
         check.grid(row=4, column=2, columnspan=2)
 
         ttk.Button(self, text='Start', style="Accent.TButton",
-                   command=lambda: [self.get_tool(), self.go(), controller.show_frame("ShowResults")], cursor="hand2").grid(row=5,column=2, sticky=EW, columnspan=2)
+                    command=lambda: [self.get_tool(), controller.show_frame("ShowResults"), self.go_bg()], cursor="hand2").grid(row=5,column=2, sticky=EW, columnspan=2)
 
 
     def get_tool(self):
@@ -747,6 +752,10 @@ class StatisticalTools(Frame):
         save = self.save.get()
         return save
 
+    def go_bg(self):
+        threading.Thread(target=self.go()).start()
+        print("test")
+
     def go(self):
 
         filename = app.get_page("FileSelection").get_file()
@@ -760,27 +769,37 @@ class StatisticalTools(Frame):
         print('Tool : ' + tool)
 
         save = app.get_page("StatisticalTools").get_save()
-        print(save)
+        #print(save)
 
         name = app.get_page("OurDatasets").get_name()
 
         #Getting the dataset that is going to be used
         f = app.get_page("DatasetSelection").use_subdataset()
 
-        print(f)
+        #print(f)
 
         if tool == "MOS of all stimuli":
             self.result = all_means(f, save)
+            self.controller.get_page("ShowResults").show_data(self.result)
         elif tool == "Precision of subjective test (ACR-5)":
-            precision_ACR5(f, name)
+            self.result = precision_ACR5(f, name)
+            self.controller.get_page("ShowResults").show_plot(self.result)
         elif tool == "Precision of subjective test (ACR-100)":
-            precision_ACR100(f, name)
+            self.result = precision_ACR100(f, name)
+            self.controller.get_page("ShowResults").show_plot(self.result)
         elif tool == "Confidence Interval":
-            CI(f)
+            self.result = CI(f)
+            self.controller.get_page("ShowResults").show_plot(self.result)
         elif tool == "Accuracy":
-            accuracy(f)
+            self.result = accuracy(f)
+            self.controller.get_page("ShowResults").show_plot(self.result)
         elif tool == "Standard deviation of MOS":
-            standard_deviation(f)
+            self.result = standard_deviation(f)
+            self.controller.get_page("ShowResults").show_plot(self.result)
+
+    def precision_ACR5_bg(self, f, name):
+        threading.Thread(target=precision_ACR5(f, name)).start()
+        print("saucisse")
 
 class ShowResults(Frame):
     """Showing the result of the statistical tool on the dataset"""
@@ -788,7 +807,7 @@ class ShowResults(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-        self.table = None
+        self.results = None
         self.subdataset = None
 
         for i in range(6):
@@ -818,10 +837,37 @@ class ShowResults(Frame):
                borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky='e', padx=10)
 
 
-
         label = Label(self, text="Here are the results",
                       foreground="#ffffff", background="#007fff")
-        label.grid(column=0, row=1, columnspan=5, sticky=N)
+        label.grid(column=0, row=1, columnspan=2, rowspan=2, sticky="new")
+
+
+    def show_data(self, results):
+        if self.results is not None:
+            self.results.remove()
+
+        window = Frame(self)
+        window.grid(column=0, row=3, rowspan=4, columnspan=4, sticky='news')
+        self.results = Table(window, dataframe=results, showtoolbar=False, showstatusbar=False)
+        self.results.showIndex()
+        self.results.show()
+
+    def show_plot(self, results):
+        #if self.results is not None:
+            #self.results.remove()
+
+        window = Frame(self)
+        window.grid(column=0, row=2, rowspan=4, columnspan=4, sticky='news')
+
+        canvas = FigureCanvasTkAgg(results, window)
+        canvas.draw()
+
+        toolbar = NavigationToolbar2Tk(canvas, window)
+        toolbar.update()
+        canvas.get_tk_widget().pack()
+
+
+
 
 
 class About(Frame):

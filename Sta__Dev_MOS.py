@@ -154,7 +154,7 @@ def standard_deviation(data):
     yy1 = SD_MOS[:, 1].T.tolist()[0]
     yy2 = SD_MOS[:, 2].T.tolist()[0]
 
-
+    """
     fig, ax = plt.subplots()
     plt.xticks(groups)
     plt.fill_between(groups, y1=yy1, y2=yy2, alpha=0.3, color='c', linestyle="--")
@@ -162,3 +162,14 @@ def standard_deviation(data):
     plt.xlabel('Nb of subjects')
     plt.ylabel('Standard Deviation of MOS')
     plt.show()
+    """
+
+    fig = plt.figure(figsize=(10, 10), dpi=80)
+    ax = fig.add_subplot(111)
+    ax.fill_between(groups, y1=yy1, y2=yy2, alpha=0.3, color='c', linestyle="--")
+    ax.set_xticklabels(groups)
+    ax.set_xlabel('Nb of subjects')
+    ax.set_ylabel('Standard Deviation of MOS')
+    ax.plot(groups, yy0, "o-", markersize=2, linewidth=1.0)
+
+    return fig
