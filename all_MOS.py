@@ -5,9 +5,9 @@ def all_means(df, save):
     result = pd.DataFrame()
     for i in range(len(df.index)):
         a = df.index[i]
-        b = df.loc[a]
+        b = df.iloc[i]
         data = pd.DataFrame({"MOS": b.mean()}, index=[a])
-        result = result.append(data, ignore_index = False)
+        result = result.append(data, ignore_index= False)
         print('MOS of ' + str(a) + ' : ' + str(b.mean()))
 
     # Create a xlsx file with the MOS of each stimulus

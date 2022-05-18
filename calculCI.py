@@ -158,6 +158,16 @@ def CI(data):
      #   CI = calcul_CI(datamatrix)
         CIS.append(calcul_CI(datamatrix))
 
+    fig = plt.figure(figsize=(10, 10), dpi=80)
+    ax = fig.add_subplot(111)
+    ax.set_title('CONFIDENCE INTERVAL', fontsize=20)  # 标题
+    ax.set_xticklabels(groups)  # 每个箱子的名字
+    ax.set_xlabel('group size')  # 设置x轴名称
+    ax.set_ylabel('CI width')  # 设置y轴名称
+    ax.boxplot(CIS, patch_artist=True, boxprops={'color': 'lightslategray', 'facecolor': 'c'})
+    #plt.show()
+
+    """
     fig, ax = plt.subplots()
     plt.title('CONFIDENCE INTERVAL',fontsize=20) #标题
     ax.set_xticklabels(groups) #每个箱子的名字
@@ -166,4 +176,7 @@ def CI(data):
     plt.boxplot(CIS, patch_artist = True, boxprops = {'color':'lightslategray','facecolor':'c'})
     plt.show()
     #print(CIS)
+    """
+
+    return fig
 
