@@ -524,7 +524,7 @@ class OurDatasets(Frame):
                   activebackground=[('disabled','#007fff'),('!disabled','red')])
         
         return ttk.Button(self, text=name, command=lambda: [self.assign_dataset(name), self.start(name), self.set_name(name)],
-                          style='SunkableButton.TButton')
+                          style='SunkableButton.TButton', width=60)
 
 
     #Change the state of a pressed button
@@ -669,8 +669,6 @@ class StatisticalTools(Frame):
         self.label.grid(row=3,column=2, columnspan=2)
 
         self.save = IntVar(self)
-        check = Checkbutton(self, variable=self.save, text="Save results in a xls file ?")
-        check.grid(row=4, column=2, columnspan=2)
 
         ttk.Button(self, text='Start', style="Accent.TButton",
                     command=lambda: [self.get_tool(), controller.show_frame("ShowResults"), self.go_bg()], cursor="hand2").grid(row=5,column=2, sticky=EW, columnspan=2)
@@ -695,6 +693,10 @@ class StatisticalTools(Frame):
             self.label.insert(END, description, 'tag-center')
             self.label['state'] = 'disabled'
             self.label.grid(row=4, column=1, columnspan=4)
+
+            check = Checkbutton(self, variable=self.save, text="Save results in a xls file ?")
+            check.grid(row=4, column=2, columnspan=2)
+
         if self.variable.get() == ToolOption[1]:
             self.label.destroy()
             description='''
