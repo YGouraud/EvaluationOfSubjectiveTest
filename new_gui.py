@@ -86,7 +86,7 @@ class StartPage(Frame):
 
         ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0,column=0, sticky=W)
         Button(self, text="Home",
-                   command=lambda: controller.show_frame("StartPage"),foreground="#ffffff", background="#007fff",borderwidth=0, highlightthickness=0, cursor="hand2")\
+                   command=lambda: controller.show_frame("StartPage"),foreground="#011f3d", background="#007fff",borderwidth=0, highlightthickness=0, cursor="hand2")\
             .grid(row=0,column=1, sticky=E)
         Button(self, text="Add a dataset",
                command=lambda: controller.show_frame("FileSelection"), foreground="#ffffff", background="#007fff",
@@ -133,7 +133,7 @@ class FileSelection(Frame):
                    command=lambda: controller.show_frame("StartPage"),foreground="#ffffff", background="#007fff",borderwidth=0, highlightthickness=0, cursor="hand2")\
             .grid(row=0,column=1,sticky=E)
         Button(self, text="Add a dataset",
-               command=lambda: controller.show_frame("FileSelection"), foreground="#ffffff", background="#007fff",
+               command=lambda: controller.show_frame("FileSelection"), foreground="#011f3d", background="#007fff",
                borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=2, sticky=E)
         Button(self, text="Statistical tools",
                command=lambda: controller.show_frame("StatisticalTools"), foreground="#ffffff", background="#007fff",
@@ -201,10 +201,10 @@ class FileSelection(Frame):
 
         quote ='''
         In this format, observers' ratings of each individual stimuli are presented like a matrix.
-        For example, the 5 highlighted represents the rating result of stimulus 2 by observer 2. This format can be directly entered into the system for analysis.
-                - The first column gives the names of all stimuli, no column names are required for this column, i.e. cellA1 is empty. 
+        For example, the highlighted cell represents the rating result of stimulus 2 by observer 2. This format can be directly entered into the system for analysis.
+                - The first column gives the names of all stimuli, no column names are required for this column. 
                 - There are no requirements for stimuli names.
-                - The last column name is MOS (main opinion score). 
+                - The last column name is MOS (Mean Opinion Score). 
                 - Each remaining column represents an observer. The column name is the observer's number or name. 
                 - The number of columns can vary depending on the number of observers.
                 '''
@@ -473,12 +473,13 @@ class OurDatasets(Frame):
                borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky=E)
 
         ttk.Label(self, text="Here are the already available datasets, you may choose one to use.",
-                  background="#007fff").grid(row=2, column=2, columnspan=2)
+                  ).grid(row=2, column=2, columnspan=2)
 
         #Create a text widget with a scrollbar for buttons
-        self.text_box = Text(self, wrap="none")
+        self.text_box = Text(self, wrap="none", borderwidth=0, spacing1=5)
         self.text_box.tag_configure("center", justify='center')
         vsb = Scrollbar(self, command=self.text_box.yview)
+
         self.text_box.configure(yscrollcommand=vsb.set)
         self.text_box.grid(column=2, columnspan=2)
 
@@ -521,8 +522,10 @@ class OurDatasets(Frame):
                   foreground=[('disabled','red'),('!disabled','black')],
                   background=[('disabled','#007fff'),('!disabled','red')],
                   activebackground=[('disabled','#007fff'),('!disabled','red')])
+        
         return ttk.Button(self, text=name, command=lambda: [self.assign_dataset(name), self.start(name), self.set_name(name)],
                           style='SunkableButton.TButton')
+
 
     #Change the state of a pressed button
     def start(self, name):
@@ -584,7 +587,7 @@ class DatasetSelection(Frame):
 
 
 
-        label = Label(self, text="Choose precisely what part of the file you want to use", foreground="#ffffff", background="#007fff")
+        label = Label(self, text="Choose precisely what part of the file you want to use")
         label.grid(column=0, row=1, columnspan=5, sticky=N)
 
         Button(self, height=2, width=35, text="Select this SubDataset ?",
@@ -642,7 +645,7 @@ class StatisticalTools(Frame):
                command=lambda: controller.show_frame("FileSelection"), foreground="#ffffff", background="#007fff",
                borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=2, sticky=E)
         Button(self, text="Statistical tools",
-               command=lambda: controller.show_frame("StatisticalTools"), foreground="#ffffff", background="#007fff",
+               command=lambda: controller.show_frame("StatisticalTools"), foreground="#011f3d", background="#007fff",
                borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=3, sticky=E)
         Button(self, text="About",
                command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
@@ -685,7 +688,7 @@ class StatisticalTools(Frame):
             self.label.destroy()
             description = '''
             Using the evaluation given by all of the observers, the tool computes the MOS for all the stimuli.
-            You can choose to save the result as a .csv by clicking the checkbox below.'''
+            '''
 
             self.label = Text(self, wrap='word', borderwidth=0)
             self.label.tag_configure('tag-center', justify='left')
@@ -724,7 +727,10 @@ class StatisticalTools(Frame):
 
         if self.variable.get() == ToolOption[3]:
             self.label.destroy()
-            description = '''CI.'''
+            description = '''
+            The Confidence Interval is a statistical tool developed by Yana Nehmé as seen in ‘Exploring Crowdsourcing for Subjective Quality Assessment of 3D Graphics’.
+            It draws several sample of N observers and calculates the evolution of the MOS and its 95% CI according to the number of observers.
+            '''
 
             self.label = Text(self, wrap='word', borderwidth=0)
             self.label.tag_configure('tag-center', justify='left')
@@ -734,9 +740,21 @@ class StatisticalTools(Frame):
         if self.variable.get() == ToolOption[4]:
             self.label.destroy()
             description = '''
-                        The Accuracy test is a statistical tool developed by Yana Nehmé as seen in ‘Comparison of subjective methods for quality assessment of 3d graphics in virtual reality’.
+            The Accuracy test is a statistical tool developed by Yana Nehmé as seen in ‘Comparison of subjective methods for quality assessment of 3d graphics in virtual reality’.
+            It draws several sample of N observers and uses an unpaired two-samples Wilcoxon test  to find wich sample are statistically different.
+            '''
 
-                        To study the difference of accuracy between the two methods, Yana Nehme used an unpaired two-samples Wilcoxon test. 
+            self.label = Text(self, wrap='word', borderwidth=0)
+            self.label.tag_configure('tag-center', justify='left')
+            self.label.insert(END, description, 'tag-center')
+            self.label['state'] = 'disabled'
+            self.label.grid(row=4, column=1, columnspan=4)
+
+        if self.variable.get() == ToolOption[5]:
+            self.label.destroy()
+            description = '''
+            The Standard deviation of the MOS is computed by drawing several sample of N observers in the dataset and computing their average SD of the MOS.
+            Showed on the curves is also distribution interval of the SD in a light shade of blue.
                         '''
 
             self.label = Text(self, wrap='word', borderwidth=0)
@@ -898,8 +916,25 @@ class About(Frame):
                command=lambda: controller.show_frame("StatisticalTools"), foreground="#ffffff", background="#007fff",
                borderwidth=0, highlightthickness=0, cursor="hand2").grid(row=0, column=3, sticky=E)
         Button(self, text="About",
-               command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
+               command=lambda: controller.show_frame("About"), foreground="#011f3d", background="#007fff",
                borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky=E)
+
+        description = '''
+        This project is part of the Transversal projects (PTRANS) organized by the Graduate School of Engineering of the University of Nantes, Polytech Nantes that happened throughout the year 2021-2022. 
+        This project involved three 4th year students of the school :
+            - Chama El Majeny
+            - Yvann Gouraud
+            - Jiawen Liu
+        They worked on a project under the tutelage of Professor Patrick Le Callet from Polytech Nantes.
+        This project was commissioned by Doctor Margaret H.Pinson from the Institute for Telecommunication Sciences (ITS), the research branch of the National Telecommunications and Information Administration (NTIA).
+        
+        The aim of this project was to provide a centralized tool that could analyze datasets obtained from subjective test quality assessment. Our tool can run several statistical analysis such as calculating the average MOS of each stimulus, and calculating the precision of the dataset using methods developed by Doctor Pinson and Ms Yana Nehmé.
+
+        '''
+        label = Text(self, wrap='word', borderwidth=0)
+        label.insert(END, description, 'tag-center')
+        label['state'] = 'disabled'
+        label.grid(row=2, column=1, columnspan=5,rowspan=5)
 
 
 if __name__ == "__main__":
