@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 
 def transform_data(data, stimuli, observers, score):
+    """From the 3 necessary attributes given by the user,
+    transform the dataset into a formalized form who can
+    be used by our statistical tools"""
 
     nameOfStimulus = stimuli
     nameOfObserver = observers

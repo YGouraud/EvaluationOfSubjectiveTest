@@ -116,6 +116,7 @@ class FileSelection(Frame):
         self.file = ''
         self.filetype = ''
         self.name = ''
+        self.filename = None
         self.dataset = None
 
         for i in range(6):
@@ -157,7 +158,8 @@ class FileSelection(Frame):
         ttk.Button(self, text='Continue', style="Accent.TButton",
                    command=lambda: [controller.get_page("NewDatasetSelection").get_new_dataset(),
                                     controller.get_page("NewDatasetSelection").sheet_option(),
-                                    controller.show_frame("NewDatasetSelection")],
+                                    controller.show_frame("NewDatasetSelection"),
+                                    self.filename.destroy()],
                    cursor="hand2")\
             .grid(row=5,column=2, columnspan=2, sticky=EW)
 
@@ -278,11 +280,11 @@ class FileSelection(Frame):
         return self.dataset
 
     def show_name_of_file(self):
-        """Defining option list for the dropdown menu
-            The menu only appears if the file is an xls file"""
+        """Show the name of the selected datafile"""
 
         ttk.Label(self, text="Name of the file : ").grid(row=3, column=1)
-        ttk.Label(self, text=self.name).grid(row=3, column=2, columnspan=2)
+        self.filename = ttk.Label(self, text=self.name)
+        self.filename.grid(row=3, column=2, columnspan=2)
 
 
 class NewDatasetSelection(Frame):
@@ -298,6 +300,7 @@ class NewDatasetSelection(Frame):
         self.observer = None
         self.rating = None
         self.formalized = None
+        self.img = []
 
         for i in range(8):
             self.grid_columnconfigure(i, weight=1)
@@ -334,16 +337,16 @@ class NewDatasetSelection(Frame):
 
 
 
-        Button(self, height=2, width=35, text="Name of stimuli column",
-               command=lambda: [self.select_stimuli()])\
+        Button(self, height=2, width=35, text="Name of stimuli column/row",
+               command=lambda: [self.select_attributes('stimuli')])\
             .grid(column=6, row=3, sticky='ew')
 
-        Button(self, height=2, width=35, text="Name of observers column",
-               command=lambda: [self.select_observer()])\
+        Button(self, height=2, width=35, text="Name of observers column/row",
+               command=lambda: [self.select_attributes('observer')])\
             .grid(column=6, row=4, sticky='ew')
 
-        Button(self, height=2, width=35, text="Name of score column",
-               command=lambda: [self.select_rating()])\
+        Button(self, height=2, width=35, text="Name of ratings column/row",
+               command=lambda: [self.select_attributes('rating')])\
             .grid(column=6, row=5, sticky='ew')
 
         Button(self, height=2, width=35, text="End of selection",
@@ -373,58 +376,52 @@ class NewDatasetSelection(Frame):
         self.table.show()
         return
 
-    def select_stimuli(self):
-        """Take the selected row/column as stimuli criteria"""
-        df = self.table.getSelectedDataFrame()
-        self.stimuli = df.columns[0]
-        im = Image.open("image/green_check.png")
-        size = 32, 32
-        im.thumbnail(size)
-        img = ImageTk.PhotoImage(im)
-        label = Label(self, image=img, width=32, height=32)
-        label.grid(column=7, row=3, sticky='ew')
-        label.image = img
+    def select_attributes(self, attr):
+        """Take the selected row/column of a specific criteria"""
+        switch = {
+            'stimuli': 3,
+            'observer': 4,
+            'rating': 5
+        }
 
-    def select_observer(self):
-        """Take the selected row/column as stimuli criteria"""
         df = self.table.getSelectedDataFrame()
-        self.observer = df.columns[0]
-        im = Image.open("image/green_check.png")
-        size = 32, 32
-        im.thumbnail(size)
-        img = ImageTk.PhotoImage(im)
-        label = Label(self, image=img, width=32, height=32)
-        label.grid(column=7, row=4, sticky='ew')
-        label.image = img
+        attribute = switch.get(attr)
+        if attribute == 3:
+            self.stimuli = df.columns[0]
+        elif attribute == 4:
+            self.observer = df.columns[0]
+        elif attribute == 5:
+            self.rating = df.columns[0]
 
-    def select_rating(self):
-        """Take the selected row/column as rating criteria"""
-        df = self.table.getSelectedDataFrame()
-        self.rating = df.columns[0]
         im = Image.open("image/green_check.png")
         size = 32, 32
         im.thumbnail(size)
         img = ImageTk.PhotoImage(im)
         label = Label(self, image=img, width=32, height=32)
-        label.grid(column=7, row=5, sticky='ew')
+        label.grid(column=7, row=attribute, sticky='ew')
         label.image = img
+        self.img.append(label)
+
 
     def save_formalized_data(self, data):
+        """Save formalized data into a variable to be used later"""
         self.formalized = data
         self.controller.get_page("OurDatasets").current_dataset = data
 
+    def reset_selected(self):
+        """Reset the selected column/rows"""
+        self.rating = None
+        self.stimuli = None
+        self.observer = None
+
+        for i in self.img:
+            i.destroy()
 
 
-    """
-    def use_subdataset(self):
-        df = self.table.getSelectedDataFrame()
-        # flatten multi-index
-        df.columns = df.columns.get_level_values(0)
-        self.subdataset = df
-        return self.subdataset
-    """
 
     def sheet_option(self):
+        """If the user inputted an Excel file, give the option to select which
+        """
         file, filetype, name = self.controller.get_page("FileSelection").get_file()
 
         if filetype == 'xls' or filetype == 'xlsx':
@@ -557,7 +554,7 @@ class DatasetSelection(Frame):
         Frame.__init__(self, parent)
         self.controller = controller
         self.table = None
-        self.subdataset = None
+        self.dataset = None
 
         for i in range(6):
             self.grid_columnconfigure(i, weight=1)
@@ -602,9 +599,9 @@ class DatasetSelection(Frame):
         window = Frame(self)
         window.grid(column=0, row=2, rowspan=1, columnspan=5, sticky='news')
 
-        df = self.controller.get_page("OurDatasets").get_current_dataset()
+        self.dataset = self.controller.get_page("OurDatasets").get_current_dataset()
 
-        self.table = Table(window, dataframe=df, showtoolbar=False, showstatusbar=False)
+        self.table = Table(window, dataframe=self.dataset, showtoolbar=False, showstatusbar=False)
         self.table.showIndex()
         self.table.show()
         return
@@ -613,8 +610,8 @@ class DatasetSelection(Frame):
         df = self.table.getSelectedDataFrame()
         # flatten multi-index
         df.columns = df.columns.get_level_values(0)
-        self.subdataset = df
-        return self.subdataset
+        self.dataset = df
+
 
 
 
@@ -710,7 +707,7 @@ class StatisticalTools(Frame):
             self.label.tag_configure('tag-center', justify='left')
             self.label.insert(END,description, 'tag-center')
             self.label['state'] = 'disabled'
-            self.label.grid(row=4,column=1, columnspan=4)
+            self.label.grid(row=4, column=1, columnspan=4)
 
         if self.variable.get() == ToolOption[2]:
             self.label.destroy()
@@ -781,10 +778,6 @@ class StatisticalTools(Frame):
         filename = app.get_page("FileSelection").get_file()
         print('File : ' + filename[0])
 
-        #sheet_num = app.get_page("FileSelection").get_sheet_num()
-        #print('sheet_number')
-        #print(sheet_num)
-
         tool = app.get_page("StatisticalTools").get_tool()
         print('Tool : ' + tool)
 
@@ -794,7 +787,7 @@ class StatisticalTools(Frame):
         name = app.get_page("OurDatasets").get_name()
 
         #Getting the dataset that is going to be used
-        f = app.get_page("DatasetSelection").use_subdataset()
+        f = app.get_page("DatasetSelection").dataset
 
         #print(f)
 
