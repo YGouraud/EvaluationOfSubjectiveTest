@@ -45,7 +45,7 @@ Each remaining column represents an observer. The number of columns can vary dep
 
 ![data_structure](image/data_structure.gif)
 
-Fig 1 : Example for format 1
+__Fig 1 : Example for format 1__
 
 ### Format 2: Other format
 In this format, each row records an observational experiment and it contains all the data generated for an experiment performed by an observer.
@@ -59,7 +59,7 @@ There is no requirement for column names, but you need to enter the column name 
 
 ![data_structure](image/other_structure.gif)
 
-Fig 2 : Example for format 2
+__Fig 2 : Example for format 2__
 
 To fill in the information necessary, the user will be presented with the following screen :
 On the left hand side, you can see a view of the dataset that the user is inputting. On the right hand side, the user can change the sheet number of the document which can be useful if several datasets are contained within the same excel file for example. 
@@ -73,12 +73,14 @@ The transformation is then done by our tool using the transformData.py file.
 For each stimulus, the tool computes the Mean Opinion Score which is the average rating given by the observers.
 
 **Output table :**
+
 ![mos](image/mos_example.png)
 
 ### Standard Deviation of MOS
 This tool shows how the standard deviation of MOS changes as the number of observers increases
 
 **Output chart:**
+
 ![sd_mos](image/sd_example.png)
 
 X-axis: The number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset. The last abscissa will be the total number of observers in the input dataset.
@@ -92,6 +94,7 @@ The Confidence Interval is a statistical tool developed by Yana Nehme in  “Exp
 It shows the distribution of the Confidence Interval Width for different group sizes. The system will sample the observers of the input dataset to form many unique groups (maximum 200 groups), with specific group size and unique combinations. Then the system will calculate the confidence interval width of these sampling groups one by one, and then draw them into a box plot.
 
 **Output chart:**
+
 ![CI](image/ci_example.png)
 
 X-axis: The number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset. The last abscissa will be the total number of observers in the input dataset.
@@ -105,6 +108,7 @@ To study the evolution of the subjective methods’ accuracy based on the number
 The program then studies the variation of accuracy number of pairs rated significantly different) according to the number of observers and plots the variation of accuracy between the tests.
 
 **Output chart:**
+
 ![acc](image/acc_example.png)
 
 X-axis: The number of observers participating in the analysis. The system will automatically select the appropriate abscissa spacing based on the total number of observers in the input dataset. The last abscissa will be the total number of observers in the input dataset.
@@ -124,4 +128,5 @@ By plotting π as a function of ΔS, the link between the two can be observed. A
 On our tool, the test exists in two different versions made for ACR-5 and ACR-100 respectively.
 
 **Output chart:**
+
 ![prec](image/prec_example.png)
