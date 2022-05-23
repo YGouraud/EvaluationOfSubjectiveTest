@@ -20,7 +20,7 @@ def load_dataset():
 
         if ft == 'csv':
             dataset_dict[ft_name] = pandas.read_csv(name, index_col=0, keep_default_na=True)
-        elif ft == "xls":
+        elif ft == "xls" or ft == "xlsx":
             dataset_dict[ft_name] = pandas.read_excel(name, index_col=0, sheet_name=1, header=1,
                                keep_default_na=True)
         elif ft == 'json':

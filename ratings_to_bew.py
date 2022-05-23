@@ -14,27 +14,29 @@ def ratings_to_bew(max_subjects, ratings):
     # THE RATING MUST BE ACR [1..5]
 
     # num is the number of subjects
-    num = ratings.shape[1]
+    num_subject = ratings.shape[1]
+
+    num_stimuli = ratings.shape[0]
 
     if not (max_subjects.isnumeric()):
         print('max_subjects must be a number, >= 1, inf suggested as a default')
         # choose at most number of subjects available
-        max_subjects = num
+        max_subjects = num_subject
     else:
-        if max_subjects > num:
-            max_subjects = num
+        if max_subjects > num_subject:
+            max_subjects = num_subject
 
     # bew and deltaS are vectors of length equal to the sum of every positive number up to num
-    bew = np.empty((num*(num-1))//2)
+    bew = np.empty((num_stimuli*(num_stimuli-1))//2)
     bew[:] = np.nan
-    deltaS = np.empty((num*(num-1))//2)
+    deltaS = np.empty((num_stimuli*(num_stimuli-1))//2)
     deltaS[:] = np.nan
     curr = 0
 
-    for cnt1 in np.arange(0, num):
-        for cnt2 in np.arange(cnt1 + 1, num):
+    for cnt1 in np.arange(0, num_stimuli):
+        for cnt2 in np.arange(cnt1 + 1, num_stimuli):
             # a Student t-test is realised between the ratings of two stimuli
-            if (ttest_ind(ratings.iloc[cnt1,:max_subjects], ratings.iloc[cnt2,:max_subjects], nan_policy='omit')[1] <= 0.05):
+            if ttest_ind(ratings.iloc[cnt1, :max_subjects], ratings.iloc[cnt2, :max_subjects], nan_policy='omit')[1] <= 0.05:
                 bew[curr] = 1
             else:
                 bew[curr] = 0
