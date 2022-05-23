@@ -124,4 +124,4 @@ By plotting π as a function of ΔS, the link between the two can be observed. A
 On our tool, the test exists in two different versions made for ACR-5 and ACR-100 respectively.
 
 **Output chart:**
-
+![prec](image/prec_example.png)
