@@ -1,5 +1,4 @@
 import tkinter as tk
-import threading
 
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
@@ -673,8 +672,7 @@ class StatisticalTools(tk.Frame):
         self.save = tk.IntVar(self)
 
         ttk.Button(self, text='Start', style="Accent.TButton",
-                   command=lambda: [self.get_tool(), controller.show_frame("ShowResults"),
-                                    threading.Thread(target=self.go).start()], cursor="hand2") \
+                   command=lambda: [self.get_tool(), controller.show_frame("ShowResults"),self.go()], cursor="hand2")\
             .grid(row=5, column=2, sticky='EW', columnspan=2)
 
     def get_tool(self):
@@ -778,7 +776,7 @@ class StatisticalTools(tk.Frame):
         return save
 
     def go(self):
-        """Compute the results of statisticals tools with the help of thread"""
+        """Compute the results of statisticals tools"""
 
         filename = app.get_page("FileSelection").get_file()
         print('File : ' + filename[0])
@@ -799,10 +797,8 @@ class StatisticalTools(tk.Frame):
         if tool == "MOS of all stimuli":
             self.result = all_means(f, save)
             self.controller.get_page("ShowResults").show_data(self.result)
-
         elif tool == "Precision of subjective test (ACR-5)":
             self.result = precision_ACR5(f, name)
-
             self.controller.get_page("ShowResults").show_plot(self.result)
         elif tool == "Precision of subjective test (ACR-100)":
             self.result = precision_ACR100(f, name)
@@ -816,11 +812,6 @@ class StatisticalTools(tk.Frame):
         elif tool == "Standard deviation of MOS":
             self.result = standard_deviation(f)
             self.controller.get_page("ShowResults").show_plot(self.result)
-
-    def precision_ACR5_bg(self, f, name):
-        threading.Thread(target=precision_ACR5(f, name)).start()
-        print("saucisse")
-
 
 class ShowResults(tk.Frame):
     """Showing the result of the statistical tool on the dataset"""
@@ -859,7 +850,7 @@ class ShowResults(tk.Frame):
 
         label = tk.Label(self, text="Here are the results",
                          foreground="#ffffff", background="#007fff")
-        label.grid(column=0, row=1, columnspan=2, rowspan=2, sticky="new")
+        label.grid(column=0, row=3, columnspan=2, rowspan=2, sticky="nw")
 
     def show_data(self, results):
         if self.results is not None:
@@ -876,7 +867,7 @@ class ShowResults(tk.Frame):
         # self.results.remove()
 
         window = tk.Frame(self)
-        window.grid(column=0, row=2, rowspan=4, columnspan=4, sticky='news')
+        window.grid(column=0, row=3, rowspan=3, columnspan=4, sticky='news')
 
         canvas = FigureCanvasTkAgg(results, window)
         canvas.draw()
