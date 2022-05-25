@@ -14,4 +14,5 @@ def all_means(df, save):
     if save==True:
         result.to_excel("MOS.xlsx")
         print("Saved result in MOS.xlsx !")
+
     return result

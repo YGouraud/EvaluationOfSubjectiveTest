@@ -1,5 +1,6 @@
 import tkinter as tk
-import threading
+from threading import Thread
+import concurrent.futures
 
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
@@ -673,8 +674,7 @@ class StatisticalTools(tk.Frame):
         self.save = tk.IntVar(self)
 
         ttk.Button(self, text='Start', style="Accent.TButton",
-                   command=lambda: [self.get_tool(), controller.show_frame("ShowResults"),
-                                    threading.Thread(target=self.go).start()], cursor="hand2") \
+                   command=lambda: [controller.show_frame("ShowResults"), self.get_tool(), self.go_bg()], cursor="hand2") \
             .grid(row=5, column=2, sticky='EW', columnspan=2)
 
     def get_tool(self):
@@ -683,6 +683,8 @@ class StatisticalTools(tk.Frame):
         return tool
 
     def definition(self, event):
+        """Give the definition of a statistical tool when selected"""
+
         ToolOption = ["MOS of all stimuli", "Precision of subjective test (ACR-5)",
                       "Precision of subjective test (ACR-100)", "Confidence Interval", "Accuracy",
                       "Standard deviation of MOS"]
@@ -777,13 +779,12 @@ class StatisticalTools(tk.Frame):
         save = self.save.get()
         return save
 
-    def go(self):
-        """Compute the results of statisticals tools with the help of thread"""
+    def go_bg(self):
+        tool = app.get_page("StatisticalTools").get_tool()
 
         filename = app.get_page("FileSelection").get_file()
-        print('File : ' + filename[0])
+        print('File : ' + filename[2])
 
-        tool = app.get_page("StatisticalTools").get_tool()
         print('Tool : ' + tool)
 
         save = app.get_page("StatisticalTools").get_save()
@@ -794,16 +795,36 @@ class StatisticalTools(tk.Frame):
         # Getting the dataset that is going to be used
         f = app.get_page("DatasetSelection").dataset
 
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(self.go, f, tool, save, name)
+            return_value = future.result()
+            print(return_value)
+
+        if tool == "MOS of all stimuli":
+            self.controller.get_page("ShowResults").show_data(return_value)
+        elif tool == "Precision of subjective test (ACR-5)":
+
+            fig = plt.figure(figsize=(8, 8), dpi=80)
+            a = fig.add_subplot(111)
+            a.plot(return_value[1], return_value[0] * 100)
+            a.set_title('soupe')
+            a.set_xlabel('DeltaS')
+            a.set_ylabel('PI')
+            a.grid(True, linestyle='-')
+
+            self.controller.get_page("ShowResults").show_plot(fig)
+
+    def go(self, f, tool, save, name):
+        """Compute the results of statisticals tools with the help of thread"""
+
         # print(f)
 
         if tool == "MOS of all stimuli":
             self.result = all_means(f, save)
-            self.controller.get_page("ShowResults").show_data(self.result)
-
+            return self.result
         elif tool == "Precision of subjective test (ACR-5)":
             self.result = precision_ACR5(f, name)
-
-            self.controller.get_page("ShowResults").show_plot(self.result)
+            return self.result
         elif tool == "Precision of subjective test (ACR-100)":
             self.result = precision_ACR100(f, name)
             self.controller.get_page("ShowResults").show_plot(self.result)
@@ -817,9 +838,30 @@ class StatisticalTools(tk.Frame):
             self.result = standard_deviation(f)
             self.controller.get_page("ShowResults").show_plot(self.result)
 
+    """
     def precision_ACR5_bg(self, f, name):
-        threading.Thread(target=precision_ACR5(f, name)).start()
+        thread = threading.Thread(target=precision_ACR5, args=(f, name))
+        thread.start()
+        thread.join()
+
         print("saucisse")
+
+    def precision_ACR100_bg(self, f, name):
+
+        pass
+
+    def confidence_interval_bg(self, f, name):
+
+        pass
+
+    def accuracy_bg(self, f, name):
+
+        pass
+
+    def sta_dev_bg(self, f, name):
+
+        pass
+    """
 
 
 class ShowResults(tk.Frame):
@@ -857,11 +899,15 @@ class ShowResults(tk.Frame):
                   command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
                   borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky='e', padx=10)
 
-        label = tk.Label(self, text="Here are the results",
-                         foreground="#ffffff", background="#007fff")
-        label.grid(column=0, row=1, columnspan=2, rowspan=2, sticky="new")
+        self.text = tk.StringVar()
+        self.text.set("Please wait while results are being computed...")
+
+        self.load = tk.Label(self, textvariable=self.text, foreground="#ffffff", background="#007fff")
+        self.load.grid(column=2, row=1, columnspan=2, rowspan=2, sticky="new")
 
     def show_data(self, results):
+        self.text.set("Here are the results :")
+
         if self.results is not None:
             self.results.remove()
 
@@ -874,9 +920,11 @@ class ShowResults(tk.Frame):
     def show_plot(self, results):
         # if self.results is not None:
         # self.results.remove()
+        # Find how to remove a cavas ad tolbar
+        self.text.set("Here are the results :")
 
         window = tk.Frame(self)
-        window.grid(column=0, row=2, rowspan=4, columnspan=4, sticky='news')
+        window.grid(column=1, row=3, rowspan=4, columnspan=3, sticky='news')
 
         canvas = FigureCanvasTkAgg(results, window)
         canvas.draw()
