@@ -8,7 +8,7 @@ def precision_ACR100(f, filename):
         B, C = ratings_to_bew('inf', f)
         D, E = bew_to_curve_100(B, C)
 
-        fig = plt.figure(figsize=(5,4), dpi=80)
+        fig = plt.figure(figsize=(8,8), dpi=80)
         a = fig.add_subplot(111)
         a.plot(E, D * 100)
         a.set_title(filename)

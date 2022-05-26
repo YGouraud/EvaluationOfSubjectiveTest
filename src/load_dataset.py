@@ -2,10 +2,13 @@ import pandas
 import os
 
 def load_dataset():
-    dataset_dict = dict()
-    print(os.getcwd())
+    """Reads all the files found in .\datasets folder and add the formalized
+     datasets into the program"""
 
-    path = os.getcwd() + r'\datasets'
+    dataset_dict = dict()
+    print(os.path.dirname(os.getcwd()))
+
+    path = os.path.dirname(os.getcwd()) + r'\datasets'
     list_of_files = []
 
     for root, dirs, files in os.walk(path):
@@ -21,8 +24,7 @@ def load_dataset():
         if ft == 'csv':
             dataset_dict[ft_name] = pandas.read_csv(name, index_col=0, keep_default_na=True)
         elif ft == "xls" or ft == "xlsx":
-            dataset_dict[ft_name] = pandas.read_excel(name, index_col=0, sheet_name=1, header=1,
-                               keep_default_na=True)
+            dataset_dict[ft_name] = pandas.read_excel(name, index_col=0, sheet_name=1, header=1, keep_default_na=True)
         elif ft == 'json':
             dataset_dict[ft_name] = pandas.read_json(name)
         elif ft == 'xml':
