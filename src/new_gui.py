@@ -28,7 +28,7 @@ class SampleApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.title("PTRANS")
+        self.title("Evalutation of Subjective Test")
         self.geometry('1000x500')
         self.state("zoomed")
 
@@ -86,7 +86,7 @@ class StartPage(tk.Frame):
         label = ttk.Label(self, text=" ", background="#007fff")
         label.grid(row=0, column=0, sticky='ew', columnspan=7, ipadx=10, ipady=20)
 
-        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+        ttk.Label(self, text="EOST", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
                                                                                                      sticky='w')
         tk.Button(self, text="Home",
                   command=lambda: controller.show_frame("StartPage"), foreground="#011f3d", background="#007fff",
@@ -134,7 +134,7 @@ class FileSelection(tk.Frame):
         label = ttk.Label(self, text=" ", background="#007fff")
         label.grid(row=0, column=0, sticky='EW', columnspan=7, ipadx=10, ipady=20)
 
-        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+        ttk.Label(self, text="EOST", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
                                                                                                      sticky='W')
         tk.Button(self, text="Home",
                   command=lambda: controller.show_frame("StartPage"), foreground="#ffffff", background="#007fff",
@@ -321,7 +321,7 @@ class NewDatasetSelection(tk.Frame):
         label = ttk.Label(self, text=" ", background="#007fff")
         label.grid(row=0, column=0, sticky='ew', columnspan=8, ipadx=10, ipady=20)
 
-        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+        ttk.Label(self, text="EOST", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
                                                                                                      sticky='W')
 
         tk.Button(self, text="Home",
@@ -474,7 +474,7 @@ class OurDatasets(tk.Frame):
         label = ttk.Label(self, text=" ", background="#007fff")
         label.grid(row=0, column=0, sticky='EW', columnspan=7, ipadx=10, ipady=20)
 
-        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+        ttk.Label(self, text="EOST", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
                                                                                                      sticky='W')
         tk.Button(self, text="Home",
                   command=lambda: controller.show_frame("StartPage"), foreground="#ffffff", background="#007fff",
@@ -587,7 +587,7 @@ class DatasetSelection(tk.Frame):
         label = ttk.Label(self, text=" ", background="#007fff")
         label.grid(row=0, column=0, sticky='ew', columnspan=7, ipadx=10, ipady=20)
 
-        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+        ttk.Label(self, text="EOST", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
                                                                                                      sticky='W')
 
         tk.Button(self, text="Home",
@@ -652,7 +652,7 @@ class StatisticalTools(tk.Frame):
         label = ttk.Label(self, text=" ", background="#007fff")
         label.grid(row=0, column=0, sticky='EW', columnspan=7, ipadx=10, ipady=20)
 
-        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+        ttk.Label(self, text="EOST", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
                                                                                                      sticky='W')
         tk.Button(self, text="Home",
                   command=lambda: controller.show_frame("StartPage"), foreground="#ffffff", background="#007fff",
@@ -849,7 +849,7 @@ class ShowResults(tk.Frame):
         label = ttk.Label(self, text=" ", background="#007fff")
         label.grid(row=0, column=0, sticky='ew', columnspan=7, ipadx=10, ipady=20)
 
-        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+        ttk.Label(self, text="EOST", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
                                                                                                      sticky='W')
 
         tk.Button(self, text="Home",
@@ -924,7 +924,7 @@ class About(tk.Frame):
         label = ttk.Label(self, text=" ", background="#007fff")
         label.grid(row=0, column=0, sticky='EW', columnspan=7, ipadx=10, ipady=20)
 
-        ttk.Label(self, text="PTRANS", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
+        ttk.Label(self, text="EOST", foreground="#ffffff", background="#007fff", font="bold").grid(row=0, column=0,
                                                                                                      sticky='W')
         tk.Button(self, text="Home",
                   command=lambda: controller.show_frame("StartPage"), foreground="#ffffff", background="#007fff",
@@ -941,7 +941,7 @@ class About(tk.Frame):
                   borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky='E')
 
         description = '''
-        This project is part of the Transversal projects (PTRANS) organized by the Graduate School of Engineering of the University of Nantes, Polytech Nantes that happened throughout the year 2021-2022. 
+        This project named EOST (Evaluation Of Subjective Test) is part of the Transversal projects (PTRANS) organized by the Graduate School of Engineering of the University of Nantes, Polytech Nantes that happened throughout the year 2021-2022. 
         This project involved three 4th year students of the school :
             - Chama El Majeny
             - Yvann Gouraud
