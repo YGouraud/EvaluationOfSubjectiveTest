@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 #从原数rawdata里， 以不重复的方式抽取nbofcombination次 含有n个观察者的组合
 #返回值是是nbofcombination层数据，每一层是n个观察者对所有刺激的评分
 def select_number_of_score(rawdata, n, nbofcombination = 10):
+
+    a = [str(i) for i in range(1, rawdata.shape[1]+1)]
+    rawdata.columns = a
+
     number_of_stimulus = rawdata.shape[0]
     number_of_observers = rawdata.shape[1] - 2  # 去掉列标和MOS
     # column1 = list(range(1,observer_list.shape[0]+1))
@@ -158,7 +162,7 @@ def CI(data):
      #   CI = calcul_CI(datamatrix)
         CIS.append(calcul_CI(datamatrix))
 
-    fig = plt.figure(figsize=(10, 10), dpi=80)
+    fig = plt.figure(figsize=(8, 8), dpi=80)
     ax = fig.add_subplot(111)
     ax.set_title('CONFIDENCE INTERVAL', fontsize=20)  # 标题
     ax.set_xticklabels(groups)  # 每个箱子的名字
