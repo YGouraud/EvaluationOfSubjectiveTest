@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def transform_data(data, stimuli, observers, score):
+def transform_data(data, stimuli, observers, score, rows):
     """From the 3 necessary attributes given by the user,
     transform the dataset into a formalized form who can
     be used by our statistical tools"""
@@ -10,6 +10,9 @@ def transform_data(data, stimuli, observers, score):
     nameOfObserver = observers
     #prefix_observers = "Obs"
     nameOfScore = score
+
+    if rows is True:
+        data = data.transpose()
 
     # Check how many observers there are
     observer_list = data[nameOfObserver].unique()

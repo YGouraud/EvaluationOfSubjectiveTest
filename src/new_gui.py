@@ -173,7 +173,7 @@ class FileSelection(tk.Frame):
         """Function that let the user select a file to use"""
         filetypes = (
             ('csv files', '*.csv'),
-            ('xls files', '*.xls'),
+            ('xls files', '*.xls *.xlsx'),
             ('Json files', '*.json'),
             ('XML files', '*.xml'),
             ('All files', '*.*')
@@ -302,7 +302,7 @@ class NewDatasetSelection(tk.Frame):
         self.controller = controller
         self.table = None
         self.dataset = None
-        # self.subdataset = None
+        self.rows = False
         self.stimuli = None
         self.observer = None
         self.rating = None
@@ -341,6 +341,10 @@ class NewDatasetSelection(tk.Frame):
                          foreground="#ffffff", background="#007fff")
         label.grid(column=0, row=1, columnspan=5, sticky='N')
 
+        tk.Button(self, height=2, width=20, text="Reset selection ?",
+                  command=lambda: self.reset_selected(), foreground="#ffffff", background="#007fff") \
+            .grid(column=5, row=2, padx=10, sticky='ew')
+
         tk.Button(self, height=2, width=35, text="Name of stimuli column/row",
                   command=lambda: [self.select_attributes('stimuli')]) \
             .grid(column=6, row=3, sticky='ew')
@@ -355,10 +359,12 @@ class NewDatasetSelection(tk.Frame):
 
         tk.Button(self, height=2, width=35, text="End of selection",
                   command=lambda: [
-                      self.save_formalized_data(transform_data(self.dataset, self.stimuli, self.observer, self.rating)),
+                      self.save_formalized_data(transform_data(self.dataset, self.stimuli, self.observer, self.rating, self.rows)),
                       controller.get_page("DatasetSelection").get_existing_dataset(),
-                      controller.show_frame("DatasetSelection")]) \
+                      controller.show_frame("DatasetSelection"),
+                      self.reset_selected()]) \
             .grid(column=6, row=6, sticky='ew')
+
 
     def get_new_dataset(self, sheet_number=1):
         """Show the dataset inputted by the user"""
@@ -370,7 +376,7 @@ class NewDatasetSelection(tk.Frame):
             self.table.remove()
 
         window = tk.Frame(self)
-        window.grid(column=0, row=2, rowspan=4, columnspan=4, sticky='news')
+        window.grid(column=0, row=2, rowspan=4, columnspan=4, sticky='nsew')
 
         df = self.controller.get_page("FileSelection").get_current_dataset(sheet_number)
 
@@ -382,7 +388,7 @@ class NewDatasetSelection(tk.Frame):
         return
 
     def select_attributes(self, attr):
-        """Take the selected row/column of a specific criteria"""
+        """Take the selected row/column of a specific criteria and inform the user it has been selected"""
         switch = {
             'stimuli': 3,
             'observer': 4,
@@ -392,11 +398,11 @@ class NewDatasetSelection(tk.Frame):
         df = self.table.getSelectedDataFrame()
         attribute = switch.get(attr)
         if attribute == 3:
-            self.stimuli = df.columns[0]
+            self.stimuli = self.column_or_row(df)
         elif attribute == 4:
-            self.observer = df.columns[0]
+            self.observer = self.column_or_row(df)
         elif attribute == 5:
-            self.rating = df.columns[0]
+            self.rating = self.column_or_row(df)
 
         im = Image.open("../image/green_check.png")
         size = 32, 32
@@ -437,7 +443,16 @@ class NewDatasetSelection(tk.Frame):
                                       command=lambda x: [self.get_new_dataset(self.variable.get())])
 
             ttk.Label(self, text="Which sheet to use ?").grid(row=1, column=6)
-            self.opt.grid(column=6, row=2, columnspan=2)
+            self.opt.grid(column=6, row=2, columnspan=3)
+
+    def column_or_row(self, df):
+        """Verify if the user selected a row or a column"""
+        if df.shape[0] == 1:
+            self.rows = True
+            return df.index[0]
+        else:
+            self.rows = False
+            return df.columns[0]
 
 
 class OurDatasets(tk.Frame):
