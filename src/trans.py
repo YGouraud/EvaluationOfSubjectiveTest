@@ -8,7 +8,6 @@ def transform_data(data, stimuli, observers, score, rows):
 
     nameOfStimulus = stimuli
     nameOfObserver = observers
-    #prefix_observers = "Obs"
     nameOfScore = score
 
     if rows is True:

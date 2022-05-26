@@ -38,11 +38,11 @@ finally:
 
 
 try:
-    import xlrd
+    import random
 except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", 'xlrd'])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 'random'])
 finally:
-    import xlrd
+    import random
 
 try:
     import pandastable
@@ -50,5 +50,26 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", 'pandastable'])
 finally:
     import pandastable
+
+try:
+    import os
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 'os'])
+finally:
+    import os
+
+try:
+    import os
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 'os'])
+finally:
+    import os
+
+try:
+    import PIL
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 'PIL'])
+finally:
+    import PIL
 
 

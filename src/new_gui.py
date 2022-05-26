@@ -1,14 +1,16 @@
+#Tkinter library import
 import tkinter as tk
-
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
 from tkinter import ttk
 
+#Other library import
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from pandas import *
 from pandastable import Table, AutoScrollbar
 from PIL import ImageTk, Image
 
+#Import from other files
 from precision_ACR5 import *
 from precision_ACR100 import *
 from all_MOS import *
