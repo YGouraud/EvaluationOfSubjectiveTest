@@ -672,7 +672,7 @@ class StatisticalTools(tk.Frame):
         self.save = tk.IntVar(self)
 
         ttk.Button(self, text='Start', style="Accent.TButton",
-                   command=lambda: [self.get_tool(), controller.show_frame("ShowResults"),self.go()], cursor="hand2")\
+                   command=lambda: [self.controller.show_frame("ShowResults"), self.go()], cursor="hand2")\
             .grid(row=5, column=2, sticky='EW', columnspan=2)
 
     def get_tool(self):
@@ -794,7 +794,7 @@ class StatisticalTools(tk.Frame):
 
         # print(f)
 
-        if tool == "MOS of all stimuli":
+        if self.tool == "MOS of all stimuli":
             self.result = all_means(f, save)
             self.controller.get_page("ShowResults").show_data(self.result)
         elif tool == "Precision of subjective test (ACR-5)":
@@ -820,6 +820,7 @@ class ShowResults(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.results = None
+        self.window = None
         self.subdataset = None
 
         for i in range(6):
@@ -848,31 +849,43 @@ class ShowResults(tk.Frame):
                   command=lambda: controller.show_frame("About"), foreground="#ffffff", background="#007fff",
                   borderwidth=0, highlightthickness=0, cursor="heart").grid(row=0, column=4, sticky='e', padx=10)
 
-        label = tk.Label(self, text="Here are the results",
-                         foreground="#ffffff", background="#007fff")
-        label.grid(column=0, row=3, columnspan=2, rowspan=2, sticky="nw")
+        self.text = tk.StringVar()
+        self.text.set("Please wait while results are being computed...")
+
+        self.load = tk.Label(self, textvariable=self.text, foreground="#ffffff", background="#007fff")
+        self.load.grid(column=2, row=1, columnspan=1, rowspan=2, padx=10, sticky="new")
 
     def show_data(self, results):
+        self.text.set("Here are the results :")
         if self.results is not None:
             self.results.remove()
 
+        if self.window is not None:
+            self.window.grid_forget()
+
         window = tk.Frame(self)
-        window.grid(column=0, row=3, rowspan=4, columnspan=4, sticky='news')
+        window.grid(column=1, row=3, rowspan=4, columnspan=4, sticky='news')
         self.results = Table(window, dataframe=results, showtoolbar=False, showstatusbar=False)
         self.results.showIndex()
         self.results.show()
 
     def show_plot(self, results):
-        # if self.results is not None:
-        # self.results.remove()
 
-        window = tk.Frame(self)
-        window.grid(column=0, row=3, rowspan=3, columnspan=4, sticky='news')
+        if self.results is not None:
+            self.results.remove()
 
-        canvas = FigureCanvasTkAgg(results, window)
+        if self.window is not None:
+            self.window.grid_forget()
+
+        self.text.set("Here are the results :")
+
+        self.window = tk.Frame(self)
+        self.window.grid(column=1, row=3, rowspan=4, columnspan=3, sticky='news')
+
+        canvas = FigureCanvasTkAgg(results, self.window)
         canvas.draw()
 
-        toolbar = NavigationToolbar2Tk(canvas, window)
+        toolbar = NavigationToolbar2Tk(canvas, self.window)
         toolbar.update()
         canvas.get_tk_widget().pack()
 
@@ -928,6 +941,12 @@ class About(tk.Frame):
         label.grid(row=2, column=1, columnspan=5, rowspan=5)
 
 
+def quit_me():
+    print('quit')
+    app.quit()
+    app.destroy()
+
 if __name__ == "__main__":
     app = SampleApp()
+    app.protocol("WM_DELETE_WINDOW", quit_me)
     app.mainloop()
