@@ -24,7 +24,9 @@ First, in order to run the tool, a user needs to import all the necessary packag
 - [numpy](https://numpy.org/) : used for statistical tools
 - [scipy](https://scipy.org/) : numpy’s extension, used for statistical functions
 - [pandastable](https://pandastable.readthedocs.io/en/latest/description.html) : used to get a preview of the dataset in the GUI
-- [xlrd](https://xlrd.readthedocs.io/en/latest/)
+- [random](https://docs.python.org/3/library/random.html) : used to get sets of a random number of observers
+- [os](https://docs.python.org/3/library/os.html) : used to get path where file is located
+- PIL : used to work with images
 
 This can be done easily by running the python file : import_file.py. This file will automatically import all of the necessary packages which can take a couple minutes.
 
