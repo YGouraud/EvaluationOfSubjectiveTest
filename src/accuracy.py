@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 
 
 def select_number_of_score(rawdata, n, nbofcombination = 10):
+
+    # Change name of columns to numbers going from 1 to the number of subject
+    a = [str(i) for i in range(1, rawdata.shape[1] + 1)]
+    rawdata.columns = a
+
     number_of_stimulus = rawdata.shape[0]
     number_of_observers = rawdata.shape[1] - 2  # 去掉列标和MOS
     # column1 = list(range(1,observer_list.shape[0]+1))
