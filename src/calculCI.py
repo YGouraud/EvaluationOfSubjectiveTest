@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 #返回值是是nbofcombination层数据，每一层是n个观察者对所有刺激的评分
 def select_number_of_score(rawdata, n, nbofcombination = 10):
 
+    #Change name of columns to numbers going from 1 to the number of subject
     a = [str(i) for i in range(1, rawdata.shape[1]+1)]
     rawdata.columns = a
 
